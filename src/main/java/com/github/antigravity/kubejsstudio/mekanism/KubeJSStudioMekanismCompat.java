@@ -1,5 +1,7 @@
 package com.github.antigravity.kubejsstudio.mekanism;
 
+import com.github.antigravity.kubejsstudio.mekanism.client.CreateTabGasInjector;
+import com.github.antigravity.kubejsstudio.mekanism.client.CreateUiHook;
 import com.github.antigravity.kubejsstudio.mekanism.config.MekanismCompatConfig;
 import com.github.antigravity.kubejsstudio.mekanism.integration.KubeJsStudioBridge;
 import com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismGasRecipeRegistry;
@@ -22,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class KubeJSStudioMekanismCompat {
     public static final String MODID = "kubejs_studio_mekanism_compat";
     public static final String MOD_NAME = "KubeJS Studio Mekanism Compat";
-    public static final String VERSION = "1.0.0-alpha.3";
+    public static final String VERSION = "1.0.0-alpha.4";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
@@ -47,8 +49,10 @@ public class KubeJSStudioMekanismCompat {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        LOGGER.info("[{}] Client setup initialized. Hooking into KubeJS Studio...", MOD_NAME);
+        LOGGER.info("[{}] Client setup initialized. Registering Studio UI hooks...", MOD_NAME);
         event.enqueueWork(() -> {
+            CreateTabGasInjector.register();
+            CreateUiHook.init();
             KubeJsStudioBridge.attemptHook();
         });
     }

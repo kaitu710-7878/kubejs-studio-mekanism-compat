@@ -31,5 +31,9 @@
   "kubejsstudio.mekanism.create.open_notice": "KubeJS StudioのCreateタブ上部に「Gases」モードが追加されています。",
   "kubejsstudio.mekanism.create.apply_success": "保留中のカスタムMekanismガスを kubejs/startup_scripts/gases.js へ正常に書き込みました！",
   "kubejsstudio.mekanism.create.apply_failed": "保留中ガスの書き込みに失敗しました。",
-  "kubejsstudio.mekanism.create.disabled": "Mekanismガスの新規作成機能はコンフィグで無効化されています。"
+  "kubejsstudio.mekanism.create.disabled": "Mekanismガスの新規作成機能はコンフィグで無効化されています。",
+
+  "gui.kubejs_studio_mekanism_compat.gas_builder.title": "KubeJS Studio - Mekanism ガス作成ビルダー",
+  "gui.kubejs_studio_mekanism_compat.gas_builder.queue": "保留に追加",
+  "gui.kubejs_studio_mekanism_compat.gas_builder.cancel": "戻る"
 }

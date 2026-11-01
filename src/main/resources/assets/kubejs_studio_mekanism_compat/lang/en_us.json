@@ -31,5 +31,9 @@
   "kubejsstudio.mekanism.create.open_notice": "Mekanism Gas Creation mode is enabled in KubeJS Studio's Create tab (Gases mode).",
   "kubejsstudio.mekanism.create.apply_success": "Successfully applied pending custom Mekanism gases to kubejs/startup_scripts/gases.js!",
   "kubejsstudio.mekanism.create.apply_failed": "Failed to apply pending gases to disk.",
-  "kubejsstudio.mekanism.create.disabled": "Mekanism Gas creation is currently disabled in config."
+  "kubejsstudio.mekanism.create.disabled": "Mekanism Gas creation is currently disabled in config.",
+
+  "gui.kubejs_studio_mekanism_compat.gas_builder.title": "KubeJS Studio - Mekanism Gas Builder",
+  "gui.kubejs_studio_mekanism_compat.gas_builder.queue": "Queue Gas",
+  "gui.kubejs_studio_mekanism_compat.gas_builder.cancel": "Back"
 }

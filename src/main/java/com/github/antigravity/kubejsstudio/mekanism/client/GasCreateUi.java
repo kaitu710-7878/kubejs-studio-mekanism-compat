@@ -23,6 +23,13 @@ public final class GasCreateUi {
     private static final Map<String, MekanismGasDefinition> MANAGED_GASES = new LinkedHashMap<>();
     private static final Map<String, MekanismGasDefinition> PENDING_GASES = new LinkedHashMap<>();
 
+    public static void queuePendingGas(MekanismGasDefinition gas) {
+        if (gas != null && !gas.id().isBlank()) {
+            PENDING_GASES.put(gas.id(), gas);
+            KubeJSStudioMekanismCompat.LOGGER.info("Queued pending gas into GasCreateUi: {}", gas.id());
+        }
+    }
+
     private String currentNamespace = "kubejs";
     private String currentPath = "";
     private String currentDisplayName = "";

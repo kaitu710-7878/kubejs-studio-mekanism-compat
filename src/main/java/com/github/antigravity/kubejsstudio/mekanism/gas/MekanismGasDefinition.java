@@ -154,6 +154,15 @@ public final class MekanismGasDefinition {
             return this;
         }
 
+        public Builder tags(Iterable<String> tags) {
+            if (tags != null) {
+                for (String t : tags) {
+                    tag(t);
+                }
+            }
+            return this;
+        }
+
         public MekanismGasDefinition build() {
             return new MekanismGasDefinition(id, displayName, color, texture, radioactivity, tags);
         }
