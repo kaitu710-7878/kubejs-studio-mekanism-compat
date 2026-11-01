@@ -1,19 +1,22 @@
 package com.github.antigravity.kubejsstudio.mekanism.recipe;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Registry holding gas-capable recipe definitions and schema mappings for KubeJS Studio.
+ * Universal registry holding gas-capable recipe definitions and dynamically resolved forms
+ * for standard Mekanism machines, addon machines, and KubeJS-created custom machines.
  */
 public final class MekanismGasRecipeRegistry {
-    private static final Map<MekanismGasRecipeType, RecipeSchemaInfo> SCHEMAS = new EnumMap<>(MekanismGasRecipeType.class);
+    private static final Map<MekanismGasRecipeType, RecipeSchemaInfo> BUILTIN_SCHEMAS = new EnumMap<>(MekanismGasRecipeType.class);
+    private static final Map<String, GenericGasRecipeForm> DYNAMIC_FORMS = new ConcurrentHashMap<>();
 
     public record SlotDesc(String role, String label, int col, int row) {}
     public record FieldDesc(String key, String label, String type, String defaultValue) {}
@@ -35,8 +38,48 @@ public final class MekanismGasRecipeRegistry {
     }
 
     public static void init() {
-        // Crystallizing: Gas Input (col 0, row 0) -> Item Output (col 2, row 0)
-        register(MekanismGasRecipeType.CRYSTALLIZING,
+        registerBuiltins();
+    }
+
+    /**
+     * Resolves or dynamically generates a recipe form for any recipe type.
+     * If the recipe is from an addon or a custom KubeJS machine, it uses introspection to create a form.
+     */
+    public static GenericGasRecipeForm resolveForm(JsonObject recipeJson) {
+        String typeId = recipeJson.has("type") ? recipeJson.get("type").getAsString() : "";
+        if (typeId.isBlank()) return null;
+
+        // Check cache
+        GenericGasRecipeForm cached = DYNAMIC_FORMS.get(typeId);
+        if (cached != null) return cached;
+
+        // Run universal introspection
+        GasRecipeIntrospector.IntrospectionResult result = GasRecipeIntrospector.inspect(recipeJson);
+        GenericGasRecipeForm form = GenericGasRecipeForm.fromIntrospection(result);
+        DYNAMIC_FORMS.put(typeId, form);
+        return form;
+    }
+
+    /**
+     * Manually registers a dynamic gas recipe form (e.g. from an addon or custom script).
+     */
+    public static void registerDynamicForm(GenericGasRecipeForm form) {
+        if (form != null) {
+            DYNAMIC_FORMS.put(form.typeId(), form);
+        }
+    }
+
+    public static GenericGasRecipeForm getDynamicForm(String typeId) {
+        return DYNAMIC_FORMS.get(typeId);
+    }
+
+    public static Map<String, GenericGasRecipeForm> getAllDynamicForms() {
+        return Collections.unmodifiableMap(DYNAMIC_FORMS);
+    }
+
+    private static void registerBuiltins() {
+        // Built-in standard Mekanism schemas (convenience defaults)
+        registerBuiltin(MekanismGasRecipeType.CRYSTALLIZING,
                 List.of(
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 0),
                         new SlotDesc("ITEM_OUTPUT", "kubejsstudio.recipes.slot.output", 2, 0)
@@ -47,8 +90,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Oxidizing: Item Input (col 0, row 0) -> Gas Output (col 2, row 0)
-        register(MekanismGasRecipeType.OXIDIZING,
+        registerBuiltin(MekanismGasRecipeType.OXIDIZING,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("GAS_OUTPUT", "kubejsstudio.mekanism.slot.gas_output", 2, 0)
@@ -59,8 +101,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Purifying: Item Input (col 0, row 0), Gas Input (col 0, row 1) -> Item Output (col 2, row 0)
-        register(MekanismGasRecipeType.PURIFYING,
+        registerBuiltin(MekanismGasRecipeType.PURIFYING,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 1),
@@ -73,8 +114,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Injecting
-        register(MekanismGasRecipeType.INJECTING,
+        registerBuiltin(MekanismGasRecipeType.INJECTING,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 1),
@@ -87,8 +127,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Compressing
-        register(MekanismGasRecipeType.COMPRESSING,
+        registerBuiltin(MekanismGasRecipeType.COMPRESSING,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 1),
@@ -101,8 +140,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Dissolution: Item Input (col 0, row 0), Gas Input (col 0, row 1) -> Gas Output (col 2, row 0)
-        register(MekanismGasRecipeType.DISSOLUTION,
+        registerBuiltin(MekanismGasRecipeType.DISSOLUTION,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 1),
@@ -115,8 +153,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Rotary Condensentrator: Fluid / Gas conversion
-        register(MekanismGasRecipeType.ROTARY,
+        registerBuiltin(MekanismGasRecipeType.ROTARY,
                 List.of(
                         new SlotDesc("FLUID_INPUT", "kubejsstudio.recipes.slot.fluid_input", 0, 0),
                         new SlotDesc("GAS_INPUT", "kubejsstudio.mekanism.slot.gas_input", 0, 1),
@@ -131,8 +168,7 @@ public final class MekanismGasRecipeRegistry {
                 )
         );
 
-        // Reaction (PRC): Item Input, Fluid Input, Gas Input -> Item Output, Gas Output
-        register(MekanismGasRecipeType.REACTION,
+        registerBuiltin(MekanismGasRecipeType.REACTION,
                 List.of(
                         new SlotDesc("ITEM_INPUT", "kubejsstudio.recipes.slot.input", 0, 0),
                         new SlotDesc("FLUID_INPUT", "kubejsstudio.recipes.slot.fluid_input", 0, 1),
@@ -152,15 +188,11 @@ public final class MekanismGasRecipeRegistry {
         );
     }
 
-    private static void register(MekanismGasRecipeType type, List<SlotDesc> slots, List<FieldDesc> fields) {
-        SCHEMAS.put(type, new RecipeSchemaInfo(type, slots, fields));
+    private static void registerBuiltin(MekanismGasRecipeType type, List<SlotDesc> slots, List<FieldDesc> fields) {
+        BUILTIN_SCHEMAS.put(type, new RecipeSchemaInfo(type, slots, fields));
     }
 
     public static RecipeSchemaInfo getSchema(MekanismGasRecipeType type) {
-        return SCHEMAS.get(type);
-    }
-
-    public static Map<MekanismGasRecipeType, RecipeSchemaInfo> getAllSchemas() {
-        return Collections.unmodifiableMap(SCHEMAS);
+        return BUILTIN_SCHEMAS.get(type);
     }
 }
