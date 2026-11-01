@@ -1,0 +1,31 @@
+{
+  "kubejs_studio_mekanism_compat.title": "KubeJS Studio Mekanism Compat",
+  "kubejs_studio_mekanism_compat.description": "Adds Mekanism Gas creation, Tag management, and Gas craft recipe support for KubeJS Studio.",
+
+  "kubejsstudio.mekanism.gas": "Gas",
+  "kubejsstudio.mekanism.gases": "Gases",
+  "kubejsstudio.mekanism.gas_amount": "Gas Amount (mB)",
+  "kubejsstudio.mekanism.fluid_amount": "Fluid Amount (mB)",
+  "kubejsstudio.mekanism.input_count": "Input Count",
+  "kubejsstudio.mekanism.output_count": "Output Count",
+  "kubejsstudio.mekanism.duration": "Duration (ticks)",
+  "kubejsstudio.mekanism.energy_required": "Energy Required (FE)",
+
+  "kubejsstudio.mekanism.slot.gas_input": "Gas Input",
+  "kubejsstudio.mekanism.slot.gas_output": "Gas Output",
+
+  "kubejsstudio.mekanism.form.crystallizing": "Chemical Crystallizer",
+  "kubejsstudio.mekanism.form.dissolution": "Chemical Dissolution Chamber",
+  "kubejsstudio.mekanism.form.oxidizing": "Chemical Oxidizer",
+  "kubejsstudio.mekanism.form.purifying": "Purification Chamber",
+  "kubejsstudio.mekanism.form.injecting": "Chemical Injection Chamber",
+  "kubejsstudio.mekanism.form.compressing": "Osmium Compressor",
+  "kubejsstudio.mekanism.form.rotary": "Rotary Condensentrator",
+  "kubejsstudio.mekanism.form.reaction": "Pressurized Reaction Chamber (PRC)",
+
+  "kubejsstudio.mekanism.create.gas_name": "Display Name",
+  "kubejsstudio.mekanism.create.gas_color": "Gas Color (Hex RGB)",
+  "kubejsstudio.mekanism.create.gas_texture": "Gas Texture",
+  "kubejsstudio.mekanism.create.radioactivity": "Radioactivity (Sv/h)",
+  "kubejsstudio.mekanism.create.tags": "Gas Tags (comma separated)"
+}

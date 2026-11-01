@@ -1,0 +1,31 @@
+{
+  "kubejs_studio_mekanism_compat.title": "KubeJS Studio Mekanism Compat",
+  "kubejs_studio_mekanism_compat.description": "KubeJS StudioにMekanismガスの追加・タグ管理・ガスを含むクラフトレシピ互換性を追加します。",
+
+  "kubejsstudio.mekanism.gas": "ガス",
+  "kubejsstudio.mekanism.gases": "ガス一覧",
+  "kubejsstudio.mekanism.gas_amount": "ガス量 (mB)",
+  "kubejsstudio.mekanism.fluid_amount": "液体量 (mB)",
+  "kubejsstudio.mekanism.input_count": "入力数",
+  "kubejsstudio.mekanism.output_count": "出力数",
+  "kubejsstudio.mekanism.duration": "処理時間 (tick)",
+  "kubejsstudio.mekanism.energy_required": "必要エネルギー (FE)",
+
+  "kubejsstudio.mekanism.slot.gas_input": "ガス入力",
+  "kubejsstudio.mekanism.slot.gas_output": "ガス出力",
+
+  "kubejsstudio.mekanism.form.crystallizing": "化学結晶化機",
+  "kubejsstudio.mekanism.form.dissolution": "化学溶解機",
+  "kubejsstudio.mekanism.form.oxidizing": "化学酸化機",
+  "kubejsstudio.mekanism.form.purifying": "精製室",
+  "kubejsstudio.mekanism.form.injecting": "化学注入機",
+  "kubejsstudio.mekanism.form.compressing": "オスミウム圧縮機",
+  "kubejsstudio.mekanism.form.rotary": "回転式凝縮器",
+  "kubejsstudio.mekanism.form.reaction": "加圧反応室 (PRC)",
+
+  "kubejsstudio.mekanism.create.gas_name": "表示名",
+  "kubejsstudio.mekanism.create.gas_color": "ガス色コード (Hex RGB)",
+  "kubejsstudio.mekanism.create.gas_texture": "ガステクスチャ",
+  "kubejsstudio.mekanism.create.radioactivity": "放射線量 (Sv/h)",
+  "kubejsstudio.mekanism.create.tags": "ガスタグ (カンマ区切り)"
+}
