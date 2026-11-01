@@ -4,6 +4,28 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.3] - 2026-11-01
+
+### English
+#### Added
+* **Visible Gas Creation in Create Tab (`CreateUiHook` & `GasCreateUi`):**
+  * Explicitly integrated the **Gases** mode into KubeJS Studio's Create Tab header toggle.
+  * Dedicated visual editor panel with fields for ID (namespace + name), Display Name, Hex RGB Color, Custom Texture, Radioactivity (Sv/h), and Tag attachments.
+  * Direct Queue & Apply workflows integrated with KubeJS Studio pending operation dock.
+  * Client utility command `/kubejs_gas` (`/kubejs_gas create` and `/kubejs_gas apply`).
+
+---
+
+### 日本語
+#### 追加
+* **Createタブでの新規ガス作成モード明示的統合 (`CreateUiHook` & `GasCreateUi`):**
+  * KubeJS StudioのCreateタブ上部トグル（Item / Block / Fluid）に「**Gases**」モードを確実に注入・追加。
+  * ID（名前空間 : パス）、表示名、16進数RGBカラーコード、テクスチャ、放射線量（Sv/h）、タグ設定を持つビジュアル入力パネルを表示。
+  * 「Queue」および「Apply」による保留キュー管理・`kubejs/startup_scripts/gases.js` への一括書き込みに対応。
+  * クライアント用コマンド `/kubejs_gas`（作成画面通知および即時反映）を追加。
+
+---
+
 ## [1.0.0-alpha.2] - 2026-11-01
 
 ### English
@@ -43,22 +65,3 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
   * Common config file `kubejs-studio-mekanism-compat.toml` with feature toggles and default values.
 * **Localization:**
   * Full bilingual support for English (`en_us.json`) and Japanese (`ja_jp.json`).
-
----
-
-### 日本語
-#### 追加
-* **Mekanismガス ビジュアルビルダー（Createタブ対応）:**
-  * ガスの表示名、16進数RGBカラーコード、テクスチャパス、放射線量（Sv/h）、タグ設定をGUIで直感的に構成可能。
-  * `StartupEvents.registry('mekanism:gas', event => { ... })` スクリプトの自動生成と双方向パース。
-* **Mekanismガスタグ管理（Tagsタブ対応）:**
-  * `mekanism:gas` レジストリ配下のタグ閲覧・編集に対応。
-  * タグメンバーの追加・削除の差分表示。
-  * `ServerEvents.tags('mekanism:gas', ...)` スクリプトおよびデータパックタグJSONの生成。
-* **Mekanismガス取扱機械レシピフォーム（Recipesタブ対応）:**
-  * ガスを扱う機械レシピフォームおよびシリアライザーを実装。
-  * ガススタック記法（例: `'100x mekanism:oxygen'`）およびガスタグ（`#...`）のサポート。
-* **設定ファイル:**
-  * 機能ごとの有効/無効化やデフォルト値を管理する `kubejs-studio-mekanism-compat.toml` を追加。
-* **ローカライズ:**
-  * 英語（`en_us.json`）および日本語（`ja_jp.json`）の完全バイリンガル対応。

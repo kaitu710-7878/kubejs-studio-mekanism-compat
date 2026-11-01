@@ -48,7 +48,8 @@ public final class KubeJsStudioBridge {
     }
 
     private static void registerGasBuilderFields() {
-        KubeJSStudioMekanismCompat.LOGGER.debug("Enabled Mekanism Gas builder extension for KubeJS Studio Create tab.");
+        com.github.antigravity.kubejsstudio.mekanism.client.CreateUiHook.init();
+        KubeJSStudioMekanismCompat.LOGGER.info("Registered Mekanism Gas visual creation mode into KubeJS Studio Create tab.");
     }
 
     public static boolean isHooked() {

@@ -27,5 +27,9 @@
   "kubejsstudio.mekanism.create.gas_color": "Gas Color (Hex RGB)",
   "kubejsstudio.mekanism.create.gas_texture": "Gas Texture",
   "kubejsstudio.mekanism.create.radioactivity": "Radioactivity (Sv/h)",
-  "kubejsstudio.mekanism.create.tags": "Gas Tags (comma separated)"
+  "kubejsstudio.mekanism.create.tags": "Gas Tags (comma separated)",
+  "kubejsstudio.mekanism.create.open_notice": "Mekanism Gas Creation mode is enabled in KubeJS Studio's Create tab (Gases mode).",
+  "kubejsstudio.mekanism.create.apply_success": "Successfully applied pending custom Mekanism gases to kubejs/startup_scripts/gases.js!",
+  "kubejsstudio.mekanism.create.apply_failed": "Failed to apply pending gases to disk.",
+  "kubejsstudio.mekanism.create.disabled": "Mekanism Gas creation is currently disabled in config."
 }

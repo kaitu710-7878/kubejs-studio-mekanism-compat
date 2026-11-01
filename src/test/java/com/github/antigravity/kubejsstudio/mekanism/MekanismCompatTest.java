@@ -217,4 +217,27 @@ public class MekanismCompatTest {
         assertTrue(generatedJson.contains("gold_ingot"));
         assertTrue(generatedJson.contains("hydrogen"));
     }
+
+    @Test
+    public void testGasCreateUiWorkflow() {
+        com.github.antigravity.kubejsstudio.mekanism.client.GasCreateUi ui = new com.github.antigravity.kubejsstudio.mekanism.client.GasCreateUi();
+        ui.startNew();
+        ui.setCurrentNamespace("kubejs");
+        ui.setCurrentPath("plasma_gas");
+        ui.setCurrentDisplayName("Plasma Gas");
+        ui.setCurrentColor(0xFF0055);
+        ui.setCurrentRadioactivity(1.2);
+        ui.setTagsFromString("forge:gases/hot, forge:gases/energy");
+
+        boolean ok = ui.queueCurrent();
+        assertTrue(ok, "Should successfully queue custom gas");
+        assertTrue(ui.pendingGases().containsKey("kubejs:plasma_gas"));
+
+        MekanismGasDefinition queued = ui.pendingGases().get("kubejs:plasma_gas");
+        assertEquals("Plasma Gas", queued.displayName());
+        assertEquals(0xFF0055, queued.color());
+        assertEquals(1.2, queued.radioactivity());
+        assertEquals(2, queued.tags().size());
+        assertTrue(queued.tags().contains("forge:gases/hot"));
+    }
 }

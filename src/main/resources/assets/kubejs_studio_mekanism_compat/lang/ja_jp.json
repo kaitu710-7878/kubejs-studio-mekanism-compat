@@ -27,5 +27,9 @@
   "kubejsstudio.mekanism.create.gas_color": "ガス色コード (Hex RGB)",
   "kubejsstudio.mekanism.create.gas_texture": "ガステクスチャ",
   "kubejsstudio.mekanism.create.radioactivity": "放射線量 (Sv/h)",
-  "kubejsstudio.mekanism.create.tags": "ガスタグ (カンマ区切り)"
+  "kubejsstudio.mekanism.create.tags": "ガスタグ (カンマ区切り)",
+  "kubejsstudio.mekanism.create.open_notice": "KubeJS StudioのCreateタブ上部に「Gases」モードが追加されています。",
+  "kubejsstudio.mekanism.create.apply_success": "保留中のカスタムMekanismガスを kubejs/startup_scripts/gases.js へ正常に書き込みました！",
+  "kubejsstudio.mekanism.create.apply_failed": "保留中ガスの書き込みに失敗しました。",
+  "kubejsstudio.mekanism.create.disabled": "Mekanismガスの新規作成機能はコンフィグで無効化されています。"
 }
