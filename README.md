@@ -9,7 +9,7 @@
 
 ### Overview
 **KubeJS Studio Mekanism Compat** is a companion mod for **KubeJS Studio** on Minecraft 1.20.1 (Forge). It extends KubeJS Studio's visual interface and code generation capabilities with full, **universal** **Mekanism Gas** compatibility:
-1. **Gas Registration Builder (Create Tab):** Dynamically injects the **Gases** mode into KubeJS Studio's Create Tab header toggle bar. Visually configure and create custom Mekanism gases (Display Name, Hex Color, Texture, Radioactivity, and Gas Tags) with automatic `StartupEvents.registry('mekanism:gas', ...)` script generation and Pending Dock integration.
+1. **Chemical/Gas Registration Builder (Create Tab):** Dynamically injects the **Chemicals** mode into KubeJS Studio's Create Tab header toggle bar. Visually configure and create custom Mekanism gases/chemicals (Display Name, Hex Color, Texture, Radioactivity, and Gas Tags) with automatic `StartupEvents.registry('mekanism:gas', ...)` script generation and Pending Dock integration.
 2. **Gas Tag Management (Tags Tab):** Browse and modify tags under the `mekanism:gas` registry, with real-time diff preview and KubeJS tag script / datapack JSON export.
 3. **Universal Gas Crafting & Machine Recipes (Recipes Tab):**
    * **Universal Auto-Detection Engine:** Automatically inspects and creates GUI forms for ANY gas-capable machine recipe without requiring manual per-machine hardcoding.
@@ -25,8 +25,8 @@
 
 ### Installation
 1. Ensure Minecraft Forge 1.20.1 and KubeJS / Mekanism are installed in your mods folder.
-2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.5.jar` into your `mods/` directory.
-3. Launch Minecraft, open KubeJS Studio (default hotkey: `K`), go to the **Create** tab, and click the **Gases** toggle button!
+2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.6.jar` into your `mods/` directory.
+3. Launch Minecraft, open KubeJS Studio (default hotkey: `K`), go to the **Create** tab, and click the **Chemicals** toggle button!
 
 ### License
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
@@ -38,7 +38,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 
 ### 概要
 **KubeJS Studio Mekanism Compat** は、Minecraft 1.20.1 (Forge) 環境の **KubeJS Studio** に **Mekanism ガス（Gas）** の完全な互換性を追加する連携MODです。
-1. **ガスの新規作成ビルダー（Createタブ対応）:** KubeJS StudioのCreateタブ上部トグルバー（Items / Blocks / Fluids）に「**Gases**」モードを直接動的注入。GUI上でMekanismガス（表示名、Hex色コード、テクスチャ、放射線量、ガスタグ）を定義し、Studioの保留ドック（Pending Dock）へシームレスに登録・反映。
+1. **ケミカル／ガスの新規作成ビルダー（Createタブ対応）:** KubeJS StudioのCreateタブ上部トグルバー（Items / Blocks / Fluids）に「**Chemicals**」モードを直接動的注入。GUI上でMekanismガス（表示名、Hex色コード、テクスチャ、放射線量、ガスタグ）を定義し、Studioの保留ドック（Pending Dock）へシームレスに登録・反映。
 2. **ガスタグの管理（Tagsタブ対応）:** `mekanism:gas` レジストリ配下のタグをブラウズ・編集可能。追加・削除の差分プレビューおよび KubeJSタスクスクリプト／データパックJSONへの出力をサポート。
 3. **汎用ガス機械レシピ対応（Recipesタブ対応）:**
    * **動的自動解析エンジン:** レシピ構造を動的に検査し、ガス入力・ガス出力・アイテム・液体・パラメータを自動検出してGUIフォームを自動レイアウト。
@@ -54,8 +54,8 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 
 ### 導入手順
 1. modsフォルダにMinecraft Forge 1.20.1、KubeJS、Mekanismが導入されていることを確認します。
-2. ビルドされた `kubejs_studio_mekanism_compat-1.0.0-alpha.4.jar` を `mods/` フォルダへ配置します。
-3. ゲームを起動し、KubeJS Studio（デフォルトキー: `K`）を開いて、Createタブの「Gases」を選択します。
+2. ビルドされた `kubejs_studio_mekanism_compat-1.0.0-alpha.6.jar` を `mods/` フォルダへ配置します。
+3. ゲームを起動し、KubeJS Studio（デフォルトキー: `K`）を開いて、Createタブの「Chemicals」を選択します。
 
 ### ライセンス
 本プロジェクトは **GNU General Public License v3.0 (GPL-3.0)** のもとで公開されています。

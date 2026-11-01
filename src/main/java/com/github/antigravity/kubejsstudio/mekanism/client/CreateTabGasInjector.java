@@ -5,17 +5,17 @@ import com.github.antigravity.kubejsstudio.mekanism.config.MekanismCompatConfig;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIScreen;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.SplitView;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.List;
-
 /**
  * Native LDLib2 injector for KubeJS Studio's Create Tab.
- * Seamlessly injects a matching "Gases" segment toggle button into the mode button bar
- * (Items, Blocks, Fluids, Gases) and switches the editor pane to GasEditorPanel when active.
+ * Integrates a matching "Chemicals" segment toggle button into the mode button bar
+ * (Items, Blocks, Fluids, Chemicals) and switches the right editor pane to GasEditorPanel
+ * without touching or corrupting the left browser pane.
  */
 public final class CreateTabGasInjector {
     private static boolean registered = false;
@@ -50,97 +50,98 @@ public final class CreateTabGasInjector {
             UIElement modeBar = itemBtn.getParent();
             if (modeBar == null) return;
 
-            // Check if already injected
+            // Check if already injected on this modeBar
             for (UIElement child : modeBar.getChildren()) {
                 if (child.hasClass("gas-mode-btn")) {
-                    return; // Already injected on this bar
+                    return;
                 }
             }
 
-            // Find the right editor pane (sibling of the browser or within root)
-            UIElement editorContainer = findEditorContainer(modeBar);
+            // Find the horizontal SplitView separating the browser (first) and editor (second)
+            SplitView hSplit = findSplitView(modeBar);
+            if (hSplit == null) {
+                hSplit = findSplitViewInTree(root);
+            }
+            if (hSplit == null) {
+                KubeJSStudioMekanismCompat.LOGGER.warn("Could not find horizontal SplitView in CreateUi. Aborting injection.");
+                return;
+            }
 
-            // Create our native LDLib2 "Gases" toggle button
-            Button gasBtn = new Button();
-            gasBtn.setText("Gases");
+            UIElement rightEditorContainer = hSplit.second;
+            if (rightEditorContainer == null) {
+                KubeJSStudioMekanismCompat.LOGGER.warn("SplitView.second is null. Aborting injection.");
+                return;
+            }
+
+            // The original Studio editor pane is the child of SplitView.second
+            final UIElement studioEditor = rightEditorContainer.getChildren().isEmpty() ? null : rightEditorContainer.getChildren().get(0);
+
+            // Create our native GasEditorPanel and add it to the RIGHT pane (never to left browser!)
+            final GasEditorPanel gasEditor = new GasEditorPanel();
+            gasEditor.addClass("gas-editor-panel");
+            gasEditor.setDisplay(false); // Initially hidden
+            gasEditor.layout(l -> {
+                l.flexGrow(1.0f);
+                l.widthPercent(100.0f);
+                l.heightPercent(100.0f);
+            });
+            rightEditorContainer.addChild(gasEditor);
+
+            // Create our native LDLib2 "Chemicals" toggle button
+            final Button gasBtn = new Button();
+            gasBtn.setText("Chemicals");
             gasBtn.addClass("gas-mode-btn");
             gasBtn.layout(l -> l.flexGrow(1.0f));
 
-            // Gas editor panel instance
-            GasEditorPanel gasEditor = new GasEditorPanel();
-            gasEditor.addClass("gas-editor-panel");
-
-            // On click listener for Gases mode
-            gasBtn.setOnClick(e -> {
-                // Clear seg-active from siblings and activate Gases
+            // Helper to activate Chemicals / Gas mode
+            Runnable showGasMode = () -> {
                 for (UIElement child : modeBar.getChildren()) {
-                    child.removeClass("seg-active");
+                    if (child instanceof Button b && b != gasBtn) {
+                        b.removeClass("seg-active");
+                    }
                 }
                 gasBtn.addClass("seg-active");
 
-                // Switch editor pane to GasEditorPanel
-                if (editorContainer != null) {
-                    showGasEditor(editorContainer, gasEditor);
+                if (studioEditor != null) {
+                    studioEditor.setDisplay(false);
                 }
-            });
+                gasEditor.setDisplay(true);
+            };
 
-            // Wrap sibling buttons (Items, Blocks, Fluids) so clicking them restores default editor
-            hookSiblingButtons(modeBar, gasBtn, editorContainer, gasEditor);
+            // Helper to restore standard Studio editor mode (Items, Blocks, Fluids)
+            Runnable restoreStudioMode = () -> {
+                gasBtn.removeClass("seg-active");
+                gasEditor.setDisplay(false);
+                if (studioEditor != null) {
+                    studioEditor.setDisplay(true);
+                }
+            };
 
-            // Inject the Gases button into the bar right beside Items, Blocks, Fluids
+            // Clicking Chemicals button switches to Gas editor
+            gasBtn.setOnClick(e -> showGasMode.run());
+
+            // Capture clicks on the modeBar: if any sibling button is clicked, restore standard editor
+            modeBar.addEventListener("click", ev -> {
+                UIElement target = ev.target;
+                boolean isGasClick = (target == gasBtn || (target != null && target.getParent() == gasBtn));
+                if (!isGasClick) {
+                    restoreStudioMode.run();
+                }
+            }, true);
+
+            // Also attach capture listeners directly to each sibling button
+            for (UIElement child : modeBar.getChildren()) {
+                if (child instanceof Button b && b != gasBtn) {
+                    b.addEventListener("click", ev -> restoreStudioMode.run(), true);
+                }
+            }
+
+            // Finally, inject the Chemicals button into the mode bar beside Items, Blocks, Fluids
             modeBar.addChild(gasBtn);
-            KubeJSStudioMekanismCompat.LOGGER.info("Successfully injected native LDLib2 [Gases] button into CreateUi mode bar!");
+            KubeJSStudioMekanismCompat.LOGGER.info("Successfully injected native LDLib2 [Chemicals] button into CreateUi right editor pane!");
 
         } catch (Throwable t) {
-            KubeJSStudioMekanismCompat.LOGGER.error("Failed to inject Gas tab into KubeJS Studio UI: {}", t.getMessage(), t);
-        }
-    }
-
-    private static void showGasEditor(UIElement editorContainer, GasEditorPanel gasEditor) {
-        // Hide existing editor children and show GasEditorPanel
-        for (UIElement child : editorContainer.getChildren()) {
-            if (child != gasEditor) {
-                child.addClass("gas-hidden");
-                child.layout(l -> l.width(0.0f).height(0.0f));
-            }
-        }
-        if (!editorContainer.getChildren().contains(gasEditor)) {
-            editorContainer.addChild(gasEditor);
-        }
-        gasEditor.layout(l -> {
-            l.flexGrow(1.0f);
-            l.widthPercent(100.0f);
-            l.heightPercent(100.0f);
-        });
-    }
-
-    private static void restoreOriginalEditor(UIElement editorContainer, GasEditorPanel gasEditor) {
-        if (editorContainer != null) {
-            for (UIElement child : editorContainer.getChildren()) {
-                if (child != gasEditor) {
-                    child.removeClass("gas-hidden");
-                    child.layout(l -> {
-                        l.flexGrow(1.0f);
-                        l.widthPercent(100.0f);
-                        l.heightPercent(100.0f);
-                    });
-                }
-            }
-            if (editorContainer.getChildren().contains(gasEditor)) {
-                gasEditor.layout(l -> l.width(0.0f).height(0.0f));
-            }
-        }
-    }
-
-    private static void hookSiblingButtons(UIElement modeBar, Button gasBtn, UIElement editorContainer, GasEditorPanel gasEditor) {
-        for (UIElement child : modeBar.getChildren()) {
-            if (child instanceof Button btn && !btn.hasClass("gas-mode-btn")) {
-                // Hook click to reset Gases active state
-                btn.addEventListener("click", ev -> {
-                    gasBtn.removeClass("seg-active");
-                    restoreOriginalEditor(editorContainer, gasEditor);
-                }, false);
-            }
+            KubeJSStudioMekanismCompat.LOGGER.error("Failed to inject Chemicals tab into KubeJS Studio UI: {}", t.getMessage(), t);
         }
     }
 
@@ -157,20 +158,24 @@ public final class CreateTabGasInjector {
         return null;
     }
 
-    private static UIElement findEditorContainer(UIElement modeBar) {
-        UIElement curr = modeBar;
-        while (curr != null && curr.getParent() != null) {
-            UIElement parent = curr.getParent();
-            List<UIElement> siblings = parent.getChildren();
-            if (siblings.size() >= 2) {
-                // In CollapsibleSplit or horizontal container, the other child is the editor pane
-                for (UIElement sibling : siblings) {
-                    if (sibling != curr && !sibling.getChildren().contains(modeBar)) {
-                        return sibling;
-                    }
-                }
+    private static SplitView findSplitView(UIElement start) {
+        UIElement curr = start;
+        while (curr != null) {
+            if (curr instanceof SplitView sv) {
+                return sv;
             }
-            curr = parent;
+            curr = curr.getParent();
+        }
+        return null;
+    }
+
+    private static SplitView findSplitViewInTree(UIElement root) {
+        if (root instanceof SplitView sv) {
+            return sv;
+        }
+        for (UIElement child : root.getChildren()) {
+            SplitView found = findSplitViewInTree(child);
+            if (found != null) return found;
         }
         return null;
     }

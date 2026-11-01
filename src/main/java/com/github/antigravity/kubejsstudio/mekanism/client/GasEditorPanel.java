@@ -6,88 +6,147 @@ import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Selector;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
+import dev.vfyjxf.taffy.style.AlignContent;
+import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.FlexDirection;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Native LDLib2 UIElement panel for editing and creating Mekanism gases,
- * seamlessly matching KubeJS Studio's layout, theme, and styling.
+ * Native LDLib2 UIElement panel for editing and creating Mekanism gases/chemicals,
+ * seamlessly matching KubeJS Studio's right-pane editor layout, styling, and classes.
  */
 public class GasEditorPanel extends UIElement {
-    private static final float LABEL_WIDTH = 130.0f;
+    private static final float LABEL_WIDTH = 110.0f;
 
-    private final Label headerLabel;
-    private final Label statusLabel;
-    private final TextField idField;
+    private final TextField nsField;
+    private final TextField pathField;
+    private final Selector<String> typeSelector;
     private final TextField displayNameField;
     private final TextField colorField;
     private final UIElement colorSwatch;
     private final TextField textureField;
     private final TextField radioactivityField;
     private final TextField tagsField;
-    private final Button queueButton;
+    private final Label statusLabel;
 
     public GasEditorPanel() {
         this.addClass("panel");
         this.layout(l -> {
             l.flexDirection(FlexDirection.COLUMN);
-            l.paddingAll(14.0f);
-            l.gapAll(10.0f);
+            l.paddingAll(12.0f);
+            l.gapAll(8.0f);
             l.flexGrow(1.0f);
             l.widthPercent(100.0f);
             l.heightPercent(100.0f);
         });
 
-        // 1. Header Section
+        // 1. Header Row: "New chemical  Give it an id, then queue it" ... "Output: KubeJS only"
         UIElement headerRow = new UIElement();
         headerRow.layout(l -> {
-            l.flexDirection(FlexDirection.COLUMN);
-            l.gapAll(2.0f);
+            l.flexDirection(FlexDirection.ROW);
+            l.alignItems(AlignItems.BASELINE);
+            l.justifyContent(AlignContent.SPACE_BETWEEN);
+            l.widthPercent(100.0f);
         });
 
-        this.headerLabel = new Label();
-        this.headerLabel.setText("Mekanism Gas Builder / 新規ガス作成");
-        this.headerLabel.layout(l -> l.flexGrow(1.0f));
+        UIElement headerLeft = new UIElement();
+        headerLeft.layout(l -> {
+            l.flexDirection(FlexDirection.ROW);
+            l.gapAll(8.0f);
+            l.alignItems(AlignItems.BASELINE);
+        });
 
-        this.statusLabel = new Label();
-        this.statusLabel.setText("Configure custom Mekanism gas properties below");
-        this.statusLabel.addClass("muted");
+        Label titleLabel = new Label();
+        titleLabel.setText("New chemical");
 
-        headerRow.addChildren(this.headerLabel, this.statusLabel);
+        Label subLabel = new Label();
+        subLabel.setText("Give it an id, then queue it");
+        subLabel.addClass("muted");
+
+        headerLeft.addChildren(titleLabel, subLabel);
+
+        Label outputLabel = new Label();
+        outputLabel.setText("Output: KubeJS only");
+        outputLabel.addClass("muted");
+
+        headerRow.addChildren(headerLeft, outputLabel);
         this.addChild(headerRow);
 
-        // 2. Scrollable Rows Container
+        // Divider
+        this.addChild(createDivider());
+
+        // 2. ID Row: Id [kubejs] : [path]
+        UIElement idRow = new UIElement();
+        idRow.layout(l -> {
+            l.flexDirection(FlexDirection.ROW);
+            l.gapAll(6.0f);
+            l.alignItems(AlignItems.CENTER);
+            l.widthPercent(100.0f);
+        });
+
+        Label idLabel = createFieldLabel("Id");
+        this.nsField = new TextField();
+        this.nsField.setText("kubejs");
+        this.nsField.layout(l -> l.width(80.0f));
+
+        Label colon = new Label();
+        colon.setText(":");
+        colon.layout(l -> l.width(8.0f));
+
+        this.pathField = new TextField();
+        this.pathField.setText("");
+        this.pathField.layout(l -> l.flexGrow(1.0f));
+
+        idRow.addChildren(idLabel, this.nsField, colon, this.pathField);
+        this.addChild(idRow);
+
+        // 3. Type Row: Type [ gas v ]
+        UIElement typeRow = new UIElement();
+        typeRow.layout(l -> {
+            l.flexDirection(FlexDirection.ROW);
+            l.gapAll(6.0f);
+            l.alignItems(AlignItems.CENTER);
+            l.widthPercent(100.0f);
+        });
+
+        Label typeLabel = createFieldLabel("Type");
+        this.typeSelector = new Selector<>();
+        this.typeSelector.setCandidates(List.of("gas", "infuse_type", "pigment", "slurry"));
+        this.typeSelector.setValue("gas", false);
+        this.typeSelector.layout(l -> l.flexGrow(1.0f));
+
+        typeRow.addChildren(typeLabel, this.typeSelector);
+        this.addChild(typeRow);
+
+        // 4. Scrollable Properties Area (ScrollerView with list-inset)
         ScrollerView scroller = new ScrollerView();
+        scroller.addClass("list-inset");
         scroller.layout(l -> {
             l.flexGrow(1.0f);
             l.widthPercent(100.0f);
-            l.gapAll(8.0f);
+            l.gapAll(6.0f);
+            l.paddingAll(6.0f);
         });
-
-        // ID Row
-        this.idField = new TextField();
-        this.idField.setText("test_gas");
-        this.idField.layout(l -> l.flexGrow(1.0f));
-        scroller.addScrollViewChild(createFieldRow("Gas ID / ガスID", this.idField));
 
         // Display Name Row
         this.displayNameField = new TextField();
-        this.displayNameField.setText("Test Gas");
+        this.displayNameField.setText("");
         this.displayNameField.layout(l -> l.flexGrow(1.0f));
-        scroller.addScrollViewChild(createFieldRow("Display Name / 表示名", this.displayNameField));
+        scroller.addScrollViewChild(createFieldRow("Display name", this.displayNameField));
 
-        // Color Row + Color Swatch Preview
+        // Colour Row + Swatch
         this.colorField = new TextField();
         this.colorField.setText("#00FFCC");
         this.colorField.layout(l -> l.flexGrow(1.0f));
 
         this.colorSwatch = new UIElement();
         this.colorSwatch.layout(l -> {
-            l.width(20.0f);
-            l.height(20.0f);
+            l.width(18.0f);
+            l.height(18.0f);
         });
         updateSwatch(0x00FFCC);
 
@@ -99,62 +158,93 @@ public class GasEditorPanel extends UIElement {
         UIElement colorContainer = new UIElement();
         colorContainer.layout(l -> {
             l.flexDirection(FlexDirection.ROW);
-            l.gapAll(8.0f);
+            l.gapAll(6.0f);
+            l.alignItems(AlignItems.CENTER);
             l.flexGrow(1.0f);
         });
         colorContainer.addChildren(this.colorField, this.colorSwatch);
-        scroller.addScrollViewChild(createFieldRow("Color / 色 (Hex)", colorContainer));
+        scroller.addScrollViewChild(createFieldRow("Colour", colorContainer));
 
         // Texture Row
         this.textureField = new TextField();
         this.textureField.setText("mekanism:liquid/liquid");
         this.textureField.layout(l -> l.flexGrow(1.0f));
-        scroller.addScrollViewChild(createFieldRow("Texture / テクスチャ", this.textureField));
+        scroller.addScrollViewChild(createFieldRow("Texture", this.textureField));
 
         // Radioactivity Row
         this.radioactivityField = new TextField();
         this.radioactivityField.setText("0.0");
         this.radioactivityField.layout(l -> l.flexGrow(1.0f));
-        scroller.addScrollViewChild(createFieldRow("Radioactivity / 放射能", this.radioactivityField));
+        scroller.addScrollViewChild(createFieldRow("Radioactivity", this.radioactivityField));
 
         // Tags Row
         this.tagsField = new TextField();
         this.tagsField.setText("forge:gases");
         this.tagsField.layout(l -> l.flexGrow(1.0f));
-        scroller.addScrollViewChild(createFieldRow("Tags / タグ (カンマ区切り)", this.tagsField));
+        scroller.addScrollViewChild(createFieldRow("Tags", this.tagsField));
 
         this.addChild(scroller);
 
-        // 3. Action Section (Queue button)
-        UIElement actionRow = new UIElement();
-        actionRow.layout(l -> {
+        // Divider
+        this.addChild(createDivider());
+
+        // 5. Bottom Action Row: [Status] ... [Revert] [Queue]
+        UIElement bottomRow = new UIElement();
+        bottomRow.layout(l -> {
             l.flexDirection(FlexDirection.ROW);
             l.gapAll(8.0f);
-        });
-
-        this.queueButton = new Button();
-        this.queueButton.setText("Queue Gas / 保留リストに追加");
-        this.queueButton.addClass("primary-button");
-        this.queueButton.layout(l -> l.flexGrow(1.0f));
-        this.queueButton.setOnClick(e -> handleQueueGas());
-
-        actionRow.addChild(this.queueButton);
-        this.addChild(actionRow);
-    }
-
-    private UIElement createFieldRow(String labelText, UIElement fieldElement) {
-        UIElement row = new UIElement();
-        row.layout(l -> {
-            l.flexDirection(FlexDirection.ROW);
-            l.gapAll(8.0f);
+            l.alignItems(AlignItems.CENTER);
+            l.justifyContent(AlignContent.FLEX_END);
             l.widthPercent(100.0f);
         });
 
-        Label label = new Label();
-        label.setText(labelText);
-        label.layout(l -> l.width(LABEL_WIDTH));
+        this.statusLabel = new Label();
+        this.statusLabel.setText("");
+        this.statusLabel.addClass("muted");
+        this.statusLabel.layout(l -> l.flexGrow(1.0f));
 
-        row.addChildren(label, fieldElement);
+        Button revertBtn = new Button();
+        revertBtn.setText("Revert");
+        revertBtn.layout(l -> l.width(60.0f));
+        revertBtn.setOnClick(e -> handleRevert());
+
+        Button queueBtn = new Button();
+        queueBtn.setText("Queue");
+        queueBtn.addClass("primary-button");
+        queueBtn.layout(l -> l.width(60.0f));
+        queueBtn.setOnClick(e -> handleQueue());
+
+        bottomRow.addChildren(this.statusLabel, revertBtn, queueBtn);
+        this.addChild(bottomRow);
+    }
+
+    private static UIElement createDivider() {
+        UIElement d = new UIElement();
+        d.addClass("divider");
+        d.layout(l -> {
+            l.widthPercent(100.0f);
+            l.height(1.0f);
+        });
+        return d;
+    }
+
+    private static Label createFieldLabel(String text) {
+        Label l = new Label();
+        l.setText(text);
+        l.layout(layout -> layout.width(LABEL_WIDTH));
+        return l;
+    }
+
+    private static UIElement createFieldRow(String labelText, UIElement fieldElement) {
+        UIElement row = new UIElement();
+        row.layout(l -> {
+            l.flexDirection(FlexDirection.ROW);
+            l.gapAll(6.0f);
+            l.alignItems(AlignItems.CENTER);
+            l.widthPercent(100.0f);
+        });
+
+        row.addChildren(createFieldLabel(labelText), fieldElement);
         return row;
     }
 
@@ -175,16 +265,29 @@ public class GasEditorPanel extends UIElement {
         }
     }
 
-    private void handleQueueGas() {
-        String id = this.idField.getValue() != null ? this.idField.getValue().trim() : "";
-        if (id.isEmpty()) {
-            this.statusLabel.setText("§cGas ID cannot be empty / ガスIDを入力してください");
+    private void handleRevert() {
+        this.pathField.setText("");
+        this.displayNameField.setText("");
+        this.colorField.setText("#00FFCC");
+        updateSwatch(0x00FFCC);
+        this.textureField.setText("mekanism:liquid/liquid");
+        this.radioactivityField.setText("0.0");
+        this.tagsField.setText("forge:gases");
+        this.statusLabel.setText("Reverted changes");
+    }
+
+    private void handleQueue() {
+        String ns = this.nsField.getValue() != null ? this.nsField.getValue().trim() : "kubejs";
+        String path = this.pathField.getValue() != null ? this.pathField.getValue().trim() : "";
+        if (path.isEmpty()) {
+            this.statusLabel.setText("§cPath cannot be empty / IDのパスを入力してください");
             return;
         }
 
+        String fullId = ns + ":" + path;
         String displayName = this.displayNameField.getValue() != null ? this.displayNameField.getValue().trim() : "";
         if (displayName.isEmpty()) {
-            displayName = id;
+            displayName = path;
         }
 
         int parsedColor = parseColor(this.colorField.getValue());
@@ -211,7 +314,7 @@ public class GasEditorPanel extends UIElement {
             }
         }
 
-        MekanismGasDefinition def = MekanismGasDefinition.builder(id)
+        MekanismGasDefinition def = MekanismGasDefinition.builder(fullId)
                 .displayName(displayName)
                 .color(parsedColor)
                 .radioactivity(radioactivity)
@@ -222,6 +325,6 @@ public class GasEditorPanel extends UIElement {
         StudioWorkspaceHelper.queueGasIntoWorkspace(def);
         GasCreateUi.queuePendingGas(def);
 
-        this.statusLabel.setText("§aQueued gas '" + id + "' into Workspace! / 保留リストに追加しました");
+        this.statusLabel.setText("§aQueued " + fullId + " into workspace! Apply below.");
     }
 }

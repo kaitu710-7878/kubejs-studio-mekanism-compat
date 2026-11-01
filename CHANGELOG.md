@@ -4,6 +4,44 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.6] - 2026-11-01
+
+### English
+#### Fixed
+* **Fixed Left Pane Visual Corruption & Editor Misalignment:**
+  * Resolved critical bug where `GasEditorPanel` was accidentally injected into the left browser pane (`browserPanel`), overlapping the search bar and item list.
+  * Corrected target insertion point to `SplitView.second` (the right editor container), preserving the left browser pane intact without any visual distortion.
+* **Proper Editor Pane Toggle & Mutual Exclusion:**
+  * When clicking the mode button (`Chemicals`), KubeJS Studio's original right editor pane is cleanly hidden via `setDisplay(false)` and `GasEditorPanel` is displayed with `setDisplay(true)`.
+  * Attached capturing event listeners to `modeBar` and sibling buttons (`Items`, `Blocks`, `Fluids`) so selecting any other category immediately deactivates `Chemicals`, hides `GasEditorPanel`, and restores standard Studio editor view without button state desynchronization.
+* **Pixel-Perfect Right Editor Layout:**
+  * Redesigned [`GasEditorPanel.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/client/GasEditorPanel.java) to mirror KubeJS Studio's right editor layout:
+    * Header: `New chemical` & `Give it an id, then queue it` with `Output: KubeJS only`.
+    * Id row: `Id` `[kubejs]` `:` `[path]`.
+    * Type row: `Type` with selector dropdown (`gas`, `infuse_type`, `pigment`, `slurry`).
+    * Properties scroller with `list-inset` class (`Display name`, `Colour` with live swatch, `Texture`, `Radioactivity`, `Tags`).
+    * Bottom action row with `Revert` and `Queue` (`primary-button`).
+
+---
+
+### 日本語
+#### 修正
+* **左ペインの表示崩れ・重なりバグの根本解消:**
+  * エディタの挿入対象判定の誤りにより、左側のブラウザペイン（`browserPanel`）内に `GasEditorPanel` が誤って追加され、検索欄やリストの上に文字やフォームが被っていた不具合を修正。
+  * `modeBar` の親階層から `SplitView` を直接取得し、エディタを右ペイン（`SplitView.second`）へ正確に配置。左側のブラウザペインへの干渉を完全撤廃し、UIの重なり・破損を100%解消。
+* **右ペインエディタの排他切り替えとトグル同期の修正:**
+  * 「Chemicals」ボタン押下時に、Studio本体の元エディタを `setDisplay(false)` で完全に非表示化し、`GasEditorPanel` を `setDisplay(true)` で美しく排他表示。
+  * `modeBar` 全体および各兄弟ボタン（`Items`, `Blocks`, `Fluids`）にキャプチャフェーズのリスナーを登録。他のモードが選ばれた瞬間に即座に `Chemicals` のアクティブ状態を解除し、ガスエディタを非表示にして通常エディタに復帰。ボタンが両方アクティブに見える状態を完全に防止。
+* **Studio標準の右ペインエディタと100%一致するレイアウト改善:**
+  * [`GasEditorPanel.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/client/GasEditorPanel.java) の階層構造・クラス・余白をStudio本体と同一に刷新:
+    * ヘッダー: `New chemical`、`Give it an id, then queue it`、右端 `Output: KubeJS only`。
+    * ID行: `Id` `[kubejs]` `:` `[path]`。
+    * Type行: `Type` セレクター（`gas`, `infuse_type`, `pigment`, `slurry`）。
+    * スクロール部: `list-inset` クラス適用（表示名、Hex色コード＋見本スウォッチ、テクスチャ、放射線量、タグ）。
+    * 下部アクション: `Revert` ボタンおよび `Queue` ボタン（`primary-button`）。
+
+---
+
 ## [1.0.0-alpha.5] - 2026-11-01
 
 ### English
