@@ -13,14 +13,16 @@ import java.util.Objects;
  */
 public final class MekanismGasDefinition {
     private final String id;
+    private final String chemicalType; // "gas", "infuse_type", "pigment", "slurry"
     private final String displayName;
     private final int color;
     private final String texture;
     private final double radioactivity;
     private final List<String> tags;
 
-    public MekanismGasDefinition(String id, String displayName, int color, String texture, double radioactivity, List<String> tags) {
-        this.id = Objects.requireNonNull(id, "Gas id cannot be null");
+    public MekanismGasDefinition(String id, String chemicalType, String displayName, int color, String texture, double radioactivity, List<String> tags) {
+        this.id = Objects.requireNonNull(id, "Chemical id cannot be null");
+        this.chemicalType = (chemicalType != null && !chemicalType.isBlank()) ? chemicalType : "gas";
         this.displayName = displayName != null ? displayName : "";
         this.color = color;
         this.texture = texture != null ? texture : "";
@@ -28,7 +30,12 @@ public final class MekanismGasDefinition {
         this.tags = tags != null ? List.copyOf(tags) : List.of();
     }
 
+    public MekanismGasDefinition(String id, String displayName, int color, String texture, double radioactivity, List<String> tags) {
+        this(id, "gas", displayName, color, texture, radioactivity, tags);
+    }
+
     public String id() { return id; }
+    public String chemicalType() { return chemicalType; }
     public String displayName() { return displayName; }
     public int color() { return color; }
     public String texture() { return texture; }
@@ -60,7 +67,7 @@ public final class MekanismGasDefinition {
             sb.append("\n    .texture('").append(escapeJs(texture)).append("')");
         }
 
-        if (radioactivity > 0.0) {
+        if ("gas".equals(chemicalType) && radioactivity > 0.0) {
             sb.append("\n    .radioactivity(").append(radioactivity).append(")");
         }
 
@@ -76,10 +83,13 @@ public final class MekanismGasDefinition {
     public JsonObject toJson() {
         JsonObject obj = new JsonObject();
         obj.addProperty("id", id);
+        obj.addProperty("type", chemicalType);
         obj.addProperty("displayName", displayName);
         obj.addProperty("color", String.format("#%06X", color));
         obj.addProperty("texture", texture);
-        obj.addProperty("radioactivity", radioactivity);
+        if ("gas".equals(chemicalType)) {
+            obj.addProperty("radioactivity", radioactivity);
+        }
         JsonArray tagArr = new JsonArray();
         for (String tag : tags) {
             tagArr.add(tag);
@@ -89,7 +99,8 @@ public final class MekanismGasDefinition {
     }
 
     public static MekanismGasDefinition fromJson(JsonObject obj) {
-        String id = obj.has("id") ? obj.get("id").getAsString() : "kubejs:custom_gas";
+        String id = obj.has("id") ? obj.get("id").getAsString() : "kubejs:custom_chemical";
+        String type = obj.has("type") ? obj.get("type").getAsString() : "gas";
         String displayName = obj.has("displayName") ? obj.get("displayName").getAsString() : "";
         int color = 0xFFFFFF;
         if (obj.has("color")) {
@@ -104,7 +115,7 @@ public final class MekanismGasDefinition {
         if (obj.has("tags") && obj.get("tags").isJsonArray()) {
             obj.getAsJsonArray("tags").forEach(el -> tags.add(el.getAsString()));
         }
-        return new MekanismGasDefinition(id, displayName, color, texture, radioactivity, tags);
+        return new MekanismGasDefinition(id, type, displayName, color, texture, radioactivity, tags);
     }
 
     private static String escapeJs(String str) {
@@ -117,6 +128,7 @@ public final class MekanismGasDefinition {
 
     public static class Builder {
         private final String id;
+        private String chemicalType = "gas";
         private String displayName = "";
         private int color = 0xFFFFFF;
         private String texture = "";
@@ -125,6 +137,11 @@ public final class MekanismGasDefinition {
 
         public Builder(String id) {
             this.id = id;
+        }
+
+        public Builder chemicalType(String chemicalType) {
+            this.chemicalType = chemicalType;
+            return this;
         }
 
         public Builder displayName(String displayName) {
@@ -164,7 +181,7 @@ public final class MekanismGasDefinition {
         }
 
         public MekanismGasDefinition build() {
-            return new MekanismGasDefinition(id, displayName, color, texture, radioactivity, tags);
+            return new MekanismGasDefinition(id, chemicalType, displayName, color, texture, radioactivity, tags);
         }
     }
 }

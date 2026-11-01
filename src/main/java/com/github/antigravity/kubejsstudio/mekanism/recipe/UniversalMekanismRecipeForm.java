@@ -74,15 +74,18 @@ public class UniversalMekanismRecipeForm implements RecipeForm {
         }
         Map<String, String> fieldVals = new HashMap<>();
 
-        // Parse each slot by its jsonKeyPath
+        // Keep track of which JSON keys have already been claimed by a slot
+        java.util.Set<String> claimedKeys = new java.util.HashSet<>();
+
+        // 1. Direct key matching
         for (int i = 0; i < slotDefs.size(); i++) {
             SlotDef def = slotDefs.get(i);
             String val = extractValueByPath(json, def.jsonKeyPath());
-            if (val != null) {
+            if (val != null && !val.isBlank()) {
                 slotVals.set(i, val);
+                claimedKeys.add(def.jsonKeyPath());
             }
 
-            // Extract amount if specified
             if (def.defaultAmountKey() != null) {
                 int amt = extractAmountByPath(json, def.jsonKeyPath());
                 if (amt > 0) {
@@ -91,10 +94,48 @@ public class UniversalMekanismRecipeForm implements RecipeForm {
             }
         }
 
+        // 2. Fallback key matching for empty slots based on role
+        for (int i = 0; i < slotDefs.size(); i++) {
+            if (!slotVals.get(i).isBlank()) continue;
+            SlotDef def = slotDefs.get(i);
+            RecipeForm.Role role = def.slot().role();
+            boolean isChemical = (role == RecipeForm.Role.FLUID_IN || role == RecipeForm.Role.FLUID_OUT);
+            boolean isOutput = (role == RecipeForm.Role.OUTPUT || role == RecipeForm.Role.FLUID_OUT);
+
+            List<String> candidates;
+            if (isOutput) {
+                candidates = isChemical
+                        ? List.of("gasOutput", "chemicalOutput", "slurryOutput", "fluidOutput", "output", "leftGasOutput", "rightGasOutput")
+                        : List.of("itemOutput", "output", "result", "item");
+            } else {
+                candidates = isChemical
+                        ? List.of("gasInput", "chemicalInput", "slurryInput", "fluidInput", "leftInput", "rightInput", "input")
+                        : List.of("itemInput", "input", "mainInput", "extraInput", "ingredient");
+            }
+
+            for (String candidate : candidates) {
+                if (claimedKeys.contains(candidate)) continue;
+                String val = extractValueByPath(json, candidate);
+                if (val != null && !val.isBlank()) {
+                    slotVals.set(i, val);
+                    claimedKeys.add(candidate);
+                    if (def.defaultAmountKey() != null) {
+                        int amt = extractAmountByPath(json, candidate);
+                        if (amt > 0) {
+                            fieldVals.put(def.defaultAmountKey(), String.valueOf(amt));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
         // Parse fields (duration, energy, etc.)
         for (RecipeForm.Field f : fields) {
             if (json.has(f.key())) {
                 fieldVals.put(f.key(), json.get(f.key()).getAsString());
+            } else if (f.key().toLowerCase().contains("energy") && json.has("energyRequired")) {
+                fieldVals.put(f.key(), json.get("energyRequired").getAsString());
             }
         }
 

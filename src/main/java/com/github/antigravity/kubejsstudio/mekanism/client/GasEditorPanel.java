@@ -314,7 +314,11 @@ public class GasEditorPanel extends UIElement {
             }
         }
 
+        String selectedType = this.typeSelector.getValue();
+        if (selectedType == null || selectedType.isBlank()) selectedType = "gas";
+
         MekanismGasDefinition def = MekanismGasDefinition.builder(fullId)
+                .chemicalType(selectedType)
                 .displayName(displayName)
                 .color(parsedColor)
                 .radioactivity(radioactivity)

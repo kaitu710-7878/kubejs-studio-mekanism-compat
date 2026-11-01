@@ -4,6 +4,43 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.8] - 2026-11-02
+
+### English
+#### Fixed & Improved
+* **Create Tab Native Lifecycle Integration via `CreateUiMixin`:**
+  * Resolved critical bug where selecting another category (`Items`, `Blocks`, `Fluids`) failed to restore the original Studio editor or left the `Chemicals` button permanently highlighted (`seg-active`).
+  * Replaced external DOM querying with native Mixin hooks (`CreateUiMixin`) directly intercepting `setMode(Kind)` and `syncToggle()`. Selecting any standard mode now immediately hides `GasEditorPanel`, clears `seg-active`, and cleanly restores all native Studio editor elements.
+  * Completely eliminated duplicate/overlapping text bug ("New fluid" / "New chemical" text stacking) by hiding all sibling Studio editor widgets when `Chemicals` is active.
+* **Chemical Slot In-Game Rendering in Recipes Tab (`SlotGridSlotMixin`):**
+  * Hooked `SlotGrid$Slot.drawFluid` to natively render authentic Mekanism chemical textures (via block atlas sprite) and RGB tints directly in 16x16 recipe slots instead of showing blank empty tildes (`"~"`) or missing item icons.
+  * Added chemical translation component tooltips to hover popups.
+* **Complex Multi-IO Recipe Parsing & Support (`UniversalMekanismRecipeForm`):**
+  * Added dedicated support for multi-input / multi-output machines such as `astral_mekanism:reconstruction` (Item Input + Gas Input + Fluid Input -> Item Output + Gas Output).
+  * Added fallback alias key matching (`itemOutput`, `gasInput`, `slurryInput`, `chemicalOutput`, etc.) so unmapped addon machine inputs and outputs render their true items and chemical values without leaving slots blank.
+* **Full Support for All Mekanism Chemical Types:**
+  * Expanded creation builder and serialization to cover **Infusion (`mekanism:infuse_type`)**, **Pigment (`mekanism:pigment`)**, **Slurry (`mekanism:slurry`)**, and **Radioactive Gases (`radioactivity > 0`)**.
+  * Outputs grouped `StartupEvents.registry('mekanism:<type>', ...)` startup scripts with proper parameter filtering.
+
+---
+
+### 日本語
+#### 修正・改善
+* **`CreateUiMixin` によるCreateタブのネイティブ統合と画面切り替え・点灯バグの根本解消:**
+  * Createタブで「Chemicals」を選択した後、元の「Items」「Blocks」「Fluids」をクリックしても画面が戻らない、および「Chemicals」ボタンが緑色に点灯しっぱなしになる不具合を完全解決。
+  * 外部イベントによるDOM探索を廃止し、Studio本体の `CreateUi` に直接フックする [`CreateUiMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/CreateUiMixin.java) を実装。`setMode` や `syncToggle` と100%同期させ、他モード選択時に即座にガスエディタを非表示化＆点灯解除し、Studio標準エディタを美しく復元。
+  * 「New fluid」と「New chemical」の文字が重なって表示される不具合を、右ペインのStudio子要素の排他制御によって完全に根絶。
+* **Recipesタブでのケミカル（気体・懸濁液・注入物質・染料）のゲーム内テクスチャ描画 (`SlotGridSlotMixin`):**
+  * `SlotGrid$Slot.drawFluid` に介入し、レシピスロット内にMekanism公式のテクスチャスプライトおよびTint（色情報）を直接16x16でレンダリングする描画エンジンを実装。空欄の「~」記号やバケツアイコンへの化けを解消し、ゲーム内と全く同じ美しいケミカルスロット表示を実現。
+  * マウスホバー時のツールチップに、化学物質の正式名称（表示名・ローカライズ名）を表示する機能を追加。
+* **複合入出力レシピ（`astral_mekanism:reconstruction` 等）の完全対応 & キー自動フォールバック:**
+  * アイテム入力＋ガス入力＋流体入力からアイテム出力＋ガス出力を生み出す `astral_mekanism:reconstruction` などの高度な機械レシピのフォーム定義を新設。
+  * JSONキーの自動探索フォールバック（`itemOutput`, `gasInput`, `slurryInput`, `fluidInput`, `chemicalOutput` 等）を導入し、アドオンMOD独自のキー命名規則でもスロットが空欄にならずアイテムやガスが100%正確に読み込まれるよう改善。
+* **全化学物質（放射線ガス、懸濁液/スラリー、染料/顔料、注入物質）の完全対応:**
+  * ガスだけでなく、**注入物質 (`mekanism:infuse_type`)**、**染料 (`mekanism:pigment`)**、**懸濁液 (`mekanism:slurry`)**、および**放射線ガス（`radioactivity > 0`）** の新規作成・保留キュー・KubeJSスクリプト生成（`StartupEvents.registry`）に対応。
+
+---
+
 ## [1.0.0-alpha.7] - 2026-11-02
 
 ### English

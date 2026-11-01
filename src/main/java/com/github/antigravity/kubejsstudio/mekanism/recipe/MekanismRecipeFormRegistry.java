@@ -180,6 +180,19 @@ public final class MekanismRecipeFormRegistry {
         );
         registerForm("evolvedmekanism:chemixing", "Evolved: Chemixing", chemixingSlots, List.of());
         registerForm("astral_mekanism:chemixing", "Astral: Chemixing", chemixingSlots, List.of());
+
+        // 18. Astral Mekanism: Reconstruction
+        List<UniversalMekanismRecipeForm.SlotDef> reconstructionSlots = List.of(
+                slot(RecipeForm.Role.INPUT, "Item Input", 0, 0, "itemInput", null, 1),
+                slot(RecipeForm.Role.FLUID_IN, "Gas Input", 0, 1, "gasInput", "gasAmount", 1),
+                slot(RecipeForm.Role.FLUID_IN, "Fluid Input", 0, 2, "fluidInput", "fluidAmount", 1000),
+                slot(RecipeForm.Role.OUTPUT, "Item Output", 2, 0, "itemOutput", null, 1),
+                slot(RecipeForm.Role.FLUID_OUT, "Gas Output", 2, 1, "gasOutput", "gasOutAmount", 1)
+        );
+        registerForm("astral_mekanism:reconstruction", "Astral: Reconstruction", reconstructionSlots, List.of(
+                new RecipeForm.Field("duration", "Duration", RecipeForm.Field.Kind.INT, false),
+                new RecipeForm.Field("energyRequired", "Energy", RecipeForm.Field.Kind.INT, false)
+        ));
     }
 
     private static void registerForm(String typeId, String label, List<UniversalMekanismRecipeForm.SlotDef> slots, List<RecipeForm.Field> fields) {

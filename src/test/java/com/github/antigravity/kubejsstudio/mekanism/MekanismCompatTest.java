@@ -326,4 +326,93 @@ public class MekanismCompatTest {
         assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalTag("forge:gases/clean_iron"));
         assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalTag("#mekanism:clean_slurry"));
     }
+
+    @Test
+    public void testAstralReconstructionRecipe() {
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("astral_mekanism:reconstruction");
+        assertNotNull(form);
+
+        String sampleJson = """
+        {
+            "type": "astral_mekanism:reconstruction",
+            "duration": 256,
+            "energyRequired": 10000000000000,
+            "itemNotConsumed": false,
+            "fluidInput": {
+                "amount": 1000000,
+                "fluid": "astral_mekanism:wisdom_rivulet"
+            },
+            "gasInput": {
+                "amount": 100000000,
+                "gas": "astral_mekanism:interstellar_antimatter"
+            },
+            "gasOutput": {
+                "amount": 1000000000,
+                "gas": "mekanism:lithium"
+            },
+            "itemInput": {
+                "amount": 4,
+                "ingredient": {
+                    "item": "astral_mekanism:coodinate_alloy"
+                }
+            },
+            "itemOutput": {
+                "item": "evolvedmekanism:alloy_creative"
+            }
+        }
+        """;
+
+        JsonObject json = JsonParser.parseString(sampleJson).getAsJsonObject();
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertNotNull(parsed);
+
+        // Verify all 5 slots are accurately extracted
+        assertEquals("astral_mekanism:coodinate_alloy", parsed.slots().get(0), "Item Input");
+        assertEquals("astral_mekanism:interstellar_antimatter", parsed.slots().get(1), "Gas Input");
+        assertEquals("astral_mekanism:wisdom_rivulet", parsed.slots().get(2), "Fluid Input");
+        assertEquals("evolvedmekanism:alloy_creative", parsed.slots().get(3), "Item Output");
+        assertEquals("mekanism:lithium", parsed.slots().get(4), "Gas Output");
+        assertEquals("256", parsed.fields().get("duration"));
+
+        String outputJson = form.toJson(parsed.slots(), parsed.fields());
+        assertTrue(outputJson.contains("coodinate_alloy"));
+        assertTrue(outputJson.contains("interstellar_antimatter"));
+        assertTrue(outputJson.contains("wisdom_rivulet"));
+        assertTrue(outputJson.contains("alloy_creative"));
+        assertTrue(outputJson.contains("lithium"));
+    }
+
+    @Test
+    public void testAllChemicalTypesSerialization() {
+        MekanismGasDefinition gas = MekanismGasDefinition.builder("kubejs:rad_gas")
+                .chemicalType("gas")
+                .displayName("Radioactive Gas")
+                .radioactivity(2.5)
+                .build();
+        assertTrue(gas.toKubeJsStatement().contains(".radioactivity(2.5)"));
+
+        MekanismGasDefinition infuse = MekanismGasDefinition.builder("kubejs:super_infuse")
+                .chemicalType("infuse_type")
+                .displayName("Super Infusion")
+                .color(0xFF3300)
+                .build();
+        assertFalse(infuse.toKubeJsStatement().contains("radioactivity"));
+
+        MekanismGasDefinition pigment = MekanismGasDefinition.builder("kubejs:neon_pigment")
+                .chemicalType("pigment")
+                .displayName("Neon Pigment")
+                .build();
+
+        MekanismGasDefinition slurry = MekanismGasDefinition.builder("kubejs:clean_gold_slurry")
+                .chemicalType("slurry")
+                .displayName("Clean Gold Slurry")
+                .build();
+
+        String startupScript = GasScriptSerializer.buildStartupScript(List.of(gas, infuse, pigment, slurry));
+        assertTrue(startupScript.contains("StartupEvents.registry('mekanism:gas'"));
+        assertTrue(startupScript.contains("StartupEvents.registry('mekanism:infuse_type'"));
+        assertTrue(startupScript.contains("StartupEvents.registry('mekanism:pigment'"));
+        assertTrue(startupScript.contains("StartupEvents.registry('mekanism:slurry'"));
+    }
 }

@@ -31,8 +31,9 @@ public final class StudioWorkspaceHelper {
             // Constructor: KubeScript(String targetId, String body, boolean override, String label, Backend backend)
             Constructor<?> ctor = kubeScriptCls.getConstructor(String.class, String.class, boolean.class, String.class, backendCls);
 
-            String scriptSnippet = gas.toKubeJsStatement();
-            String label = "Gas: " + gas.id();
+            String type = gas.chemicalType() != null ? gas.chemicalType() : "gas";
+            String scriptSnippet = "StartupEvents.registry('mekanism:" + type + "', event => {\n" + gas.toKubeJsStatement() + "\n});";
+            String label = "Chemical (" + type + "): " + gas.id();
             Object op = ctor.newInstance(gas.id(), scriptSnippet, false, label, kubejsBackend);
 
             Method addMethod = workspaceCls.getMethod("add", Class.forName("dev.tysontheember.kubejsstudio.core.op.Operation"));
