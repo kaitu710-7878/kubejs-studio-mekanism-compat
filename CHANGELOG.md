@@ -4,6 +4,36 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.7] - 2026-11-02
+
+### English
+#### Fixed
+* **Mekanism & Astral Mekanism Machine Recipes Fully Supported in Recipes Tab:**
+  * **Resolved Missing & Blank Slot UI:**
+    * KubeJS Studio natively only supported 4 basic recipes (`crushing`, `enriching`, `smelting`, `combining`), returning `null` for all other Mekanism machines and addons. This caused Studio to skip `buildSlotArea()`, leaving the recipe area empty or completely blank.
+    * Implemented [`RecipesUiMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/RecipesUiMixin.java), [`MekanismRecipeFormRegistry.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/MekanismRecipeFormRegistry.java), and [`UniversalMekanismRecipeForm.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/UniversalMekanismRecipeForm.java) supporting 17+ machines (Purifying, Injecting, Compressing, Metallurgic Infusing, Dissolution, Crystallizing, Chemical Infusing, Reaction Chamber, Rotary Condensentrator, Chemical Oxidizer, Chemical Washer, Electrolytic Separator, Thermal Evaporation, Nucleosynthesizing, Astral Gas Conversion, and Chemixing) plus dynamic auto-detection for custom addon machines.
+  * **Resolved Red Exclamation Mark ("!") Slot Errors:**
+    * Fixed false-positive unresolved slot errors caused by Studio only checking vanilla Item and Fluid registries in `GameState.idInRegistry`.
+    * Implemented [`GameStateMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/GameStateMixin.java) and [`SlotGridSlotMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/SlotGridSlotMixin.java) via [`MekanismRegistryLookup.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/MekanismRegistryLookup.java) to validate Mekanism Chemical registries (Gas, Slurry, InfuseType, Pigment) and chemical tags.
+  * **Integrated Type Dropdown Menu:**
+    * Hooked into `RecipesUi.openTypeMenu` using Mixin `@ModifyArg` so all Mekanism and Astral machine recipe types appear directly in the recipe creation dropdown.
+
+---
+
+### 日本語
+#### 修正
+* **RecipesタブにおけるMekanism公式機械・Astral Mekanismレシピの完全対応と不具合解消:**
+  * **スロットUI非表示・空欄バグの根本解消:**
+    * KubeJS Studio本体は4種類（`crushing`, `enriching`, `smelting`, `combining`）しか認識できず、Purifying, Injecting, Metallurgic Infusing, Reaction, Dissolution, Crystallizing, Chemixing等のあらゆる機械で `matchForm` が `null` を返していました。その結果、Studio本体の `buildSlotArea()` の呼び出しがスキップされ、加工前・加工後のスロットUIが表示されない、または中身が空欄になる致命的不具合が発生していました。
+    * [`RecipesUiMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/RecipesUiMixin.java)、[`MekanismRecipeFormRegistry.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/MekanismRecipeFormRegistry.java)、[`UniversalMekanismRecipeForm.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/UniversalMekanismRecipeForm.java) を新設し、Mekanism公式全機械、Astral Mekanism（`chemixing`, `ame_gas_conversion`等）、および未知のアドオン機械への動的自動推論を完備。
+  * **入出力スロットの赤い「!」エラーマーク（Unresolved）の完全解消:**
+    * KubeJS StudioはスロットIDを `GameState.idInRegistry` で検証しますが、ItemとFluidレジストリしか検索しないため、MekanismのGasやChemical ID（`mekanism:oxygen`, `astral_mekanism:astral_ether` 等）が存在しないIDと誤認され、赤い「!」マークが表示されていました。
+    * [`GameStateMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/GameStateMixin.java) と [`SlotGridSlotMixin.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/mixin/SlotGridSlotMixin.java) を実装し、[`MekanismRegistryLookup.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/recipe/MekanismRegistryLookup.java) を通じてGas/Slurry/InfuseType/Pigmentおよびガスタグを有効判定するように拡張。エラーアイコンの誤表示を100%解消しました。
+  * **新規レシピ作成時のTypeピッカーメニューへの統合:**
+    * `RecipesUi.openTypeMenu` に Mixin `@ModifyArg` を注入し、Studioのタイプ選択ドロップダウンにすべてのMekanism機械フォームが自動的に登録・表示されるよう連携を強化しました。
+
+---
+
 ## [1.0.0-alpha.6] - 2026-11-01
 
 ### English

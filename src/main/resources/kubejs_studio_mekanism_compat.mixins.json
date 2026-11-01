@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.antigravity.kubejsstudio.mekanism.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "kubejs_studio_mekanism_compat.refmap.json",
+  "client": [
+    "RecipesUiMixin",
+    "GameStateMixin",
+    "SlotGridSlotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

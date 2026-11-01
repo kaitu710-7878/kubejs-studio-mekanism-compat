@@ -240,4 +240,90 @@ public class MekanismCompatTest {
         assertEquals(2, queued.tags().size());
         assertTrue(queued.tags().contains("forge:gases/hot"));
     }
+
+    @Test
+    public void testUniversalMekanismRecipeFormPurifying() {
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("mekanism:purifying");
+        assertNotNull(form);
+
+        String sampleJson = """
+        {
+          "type": "mekanism:purifying",
+          "itemInput": {
+            "ingredient": {
+              "tag": "forge:ores/iron"
+            }
+          },
+          "chemicalInput": {
+            "amount": 1,
+            "gas": "mekanism:oxygen"
+          },
+          "output": {
+            "item": "mekanism:clump_iron",
+            "count": 3
+          }
+        }
+        """;
+
+        JsonObject json = JsonParser.parseString(sampleJson).getAsJsonObject();
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertNotNull(parsed);
+        assertEquals("#forge:ores/iron", parsed.slots().get(0));
+        assertEquals("mekanism:oxygen", parsed.slots().get(1));
+        assertEquals("mekanism:clump_iron", parsed.slots().get(2));
+    }
+
+    @Test
+    public void testUniversalMekanismRecipeFormChemixing() {
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("evolvedmekanism:chemixing");
+        assertNotNull(form);
+
+        String chemixingJson = """
+        {
+            "type": "evolvedmekanism:chemixing",
+            "extraInput": {
+                "ingredient": {
+                    "item": "astral_mekanism:alloy_stardust"
+                }
+            },
+            "gasInput": {
+                "amount": 50,
+                "gas": "astral_mekanism:astral_ether"
+            },
+            "mainInput": {
+                "ingredient": {
+                    "item": "astral_mekanism:mekanical_composter"
+                }
+            },
+            "output": {
+                "item": "astral_mekanism:astral_composter"
+            }
+        }
+        """;
+
+        JsonObject json = JsonParser.parseString(chemixingJson).getAsJsonObject();
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertNotNull(parsed);
+        assertEquals("astral_mekanism:mekanical_composter", parsed.slots().get(0));
+        assertEquals("astral_mekanism:alloy_stardust", parsed.slots().get(1));
+        assertEquals("astral_mekanism:astral_ether", parsed.slots().get(2));
+        assertEquals("astral_mekanism:astral_composter", parsed.slots().get(3));
+        assertEquals("50", parsed.fields().get("gasAmount"));
+
+        String outputJson = form.toJson(parsed.slots(), parsed.fields());
+        assertTrue(outputJson.contains("astral_mekanism:mekanical_composter"));
+        assertTrue(outputJson.contains("astral_mekanism:alloy_stardust"));
+        assertTrue(outputJson.contains("astral_mekanism:astral_ether"));
+        assertTrue(outputJson.contains("astral_mekanism:astral_composter"));
+    }
+
+    @Test
+    public void testMekanismRegistryLookupValidation() {
+        assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalId("mekanism:oxygen"));
+        assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalId("astral_mekanism:astral_ether"));
+        assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalTag("forge:gases/clean_iron"));
+        assertTrue(com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRegistryLookup.isValidChemicalTag("#mekanism:clean_slurry"));
+    }
 }
