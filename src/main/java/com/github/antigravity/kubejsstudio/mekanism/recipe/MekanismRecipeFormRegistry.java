@@ -34,7 +34,20 @@ public final class MekanismRecipeFormRegistry {
     }
 
     public static UniversalMekanismRecipeForm getOrBuildForm(String typeId) {
+        return getOrBuildForm(typeId, null);
+    }
+
+    public static UniversalMekanismRecipeForm getOrBuildForm(String typeId, com.google.gson.JsonObject json) {
         if (typeId == null) return null;
+
+        // If overriding an existing recipe with actual JSON, inspect it to adapt exact slots
+        if (json != null) {
+            UniversalMekanismRecipeForm inspected = MekanismDynamicRecipeInspector.inspect(typeId, json);
+            if (inspected != null) {
+                return inspected;
+            }
+        }
+
         if (BUILTIN_FORMS.containsKey(typeId)) {
             return BUILTIN_FORMS.get(typeId);
         }
@@ -46,6 +59,32 @@ public final class MekanismRecipeFormRegistry {
     }
 
     private static void registerBuiltins() {
+        // 0. Single item in -> Single item out machines (Enriching, Crushing, Smelting) - ZERO phantom gas slots!
+        registerForm("mekanism:enriching", "Mekanism: Enriching",
+                List.of(
+                        slot(RecipeForm.Role.INPUT, "Item Input", 0, 0, "input", null, 1),
+                        slot(RecipeForm.Role.OUTPUT, "Item Output", 2, 0, "output", null, 1)
+                ), List.of());
+
+        registerForm("mekanism:crushing", "Mekanism: Crushing",
+                List.of(
+                        slot(RecipeForm.Role.INPUT, "Item Input", 0, 0, "input", null, 1),
+                        slot(RecipeForm.Role.OUTPUT, "Item Output", 2, 0, "output", null, 1)
+                ), List.of());
+
+        registerForm("mekanism:smelting", "Mekanism: Smelting",
+                List.of(
+                        slot(RecipeForm.Role.INPUT, "Item Input", 0, 0, "input", null, 1),
+                        slot(RecipeForm.Role.OUTPUT, "Item Output", 2, 0, "output", null, 1)
+                ), List.of());
+
+        registerForm("mekanism:combining", "Mekanism: Combining",
+                List.of(
+                        slot(RecipeForm.Role.INPUT, "Main Input", 0, 0, "mainInput", null, 1),
+                        slot(RecipeForm.Role.INPUT, "Extra Input", 0, 1, "extraInput", null, 1),
+                        slot(RecipeForm.Role.OUTPUT, "Item Output", 2, 0, "output", null, 1)
+                ), List.of());
+
         // 1. Purifying
         registerForm("mekanism:purifying", "Mekanism: Purifying",
                 List.of(
@@ -193,6 +232,31 @@ public final class MekanismRecipeFormRegistry {
                 new RecipeForm.Field("duration", "Duration", RecipeForm.Field.Kind.INT, false),
                 new RecipeForm.Field("energyRequired", "Energy", RecipeForm.Field.Kind.INT, false)
         ));
+
+        // 19. Astral Mekanism: Infusing Condense (Refined Astral Ether, etc.)
+        registerForm("astral_mekanism:infusing_condense", "Astral: Infusing Condense",
+                List.of(
+                        slot(RecipeForm.Role.FLUID_IN, "Gas Input", 0, 0, "inputGas", "gasAmount", 1),
+                        slot(RecipeForm.Role.FLUID_IN, "Infusion Input", 0, 1, "inputInfusion", "infuseAmount", 1000),
+                        slot(RecipeForm.Role.FLUID_OUT, "Fluid Output", 2, 0, "output", "outputAmount", 1)
+                ), List.of());
+
+        // 20. Astral Mekanism: Mekanical Transform
+        registerForm("astral_mekanism:mekanical_transform", "Astral: Mekanical Transform",
+                List.of(
+                        slot(RecipeForm.Role.INPUT, "Item Input A", 0, 0, "itemInputA", null, 1),
+                        slot(RecipeForm.Role.INPUT, "Item Input B", 0, 1, "itemInputB", null, 1),
+                        slot(RecipeForm.Role.INPUT, "Item Input C", 0, 2, "itemInputC", null, 1),
+                        slot(RecipeForm.Role.FLUID_IN, "Fluid Input A", 1, 0, "fluidInputA", "fluidAAmount", 1000),
+                        slot(RecipeForm.Role.FLUID_IN, "Fluid Input B", 1, 1, "fluidInputB", "fluidBAmount", 1000),
+                        slot(RecipeForm.Role.OUTPUT, "Item Output", 3, 1, "outputItem", null, 1)
+                ), List.of(
+                        new RecipeForm.Field("itemAIsCatalyst", "Item A Catalyst", RecipeForm.Field.Kind.BOOL, true),
+                        new RecipeForm.Field("itemBIsCatalyst", "Item B Catalyst", RecipeForm.Field.Kind.BOOL, true),
+                        new RecipeForm.Field("itemCIsCatalyst", "Item C Catalyst", RecipeForm.Field.Kind.BOOL, true),
+                        new RecipeForm.Field("fluidAIsCatalyst", "Fluid A Catalyst", RecipeForm.Field.Kind.BOOL, true),
+                        new RecipeForm.Field("fluidBIsCatalyst", "Fluid B Catalyst", RecipeForm.Field.Kind.BOOL, true)
+                ));
     }
 
     private static void registerForm(String typeId, String label, List<UniversalMekanismRecipeForm.SlotDef> slots, List<RecipeForm.Field> fields) {

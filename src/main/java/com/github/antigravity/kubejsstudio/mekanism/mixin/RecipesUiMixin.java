@@ -20,14 +20,29 @@ public abstract class RecipesUiMixin {
     @Shadow
     private void formItem(List<FilterDropdown.Item> items, RecipeForm form) {}
 
+    @Shadow
+    private String overrideJson;
+
     /**
      * Intercepts recipe form matching so any Mekanism, Astral Mekanism, or universal gas machine recipe
      * cleanly resolves to a dedicated or auto-inferred UniversalMekanismRecipeForm instead of null/custom.
+     * When overriding an existing recipe, the JSON is dynamically inspected to produce exact slots
+     * (eliminating phantom gas slots and capturing all complex multi-IO items/fluids/gases).
      */
     @Inject(method = "matchForm", at = @At("HEAD"), cancellable = true)
     private void onMatchForm(String typeId, CallbackInfoReturnable<RecipeForm> cir) {
         if (MekanismRecipeFormRegistry.supports(typeId)) {
-            UniversalMekanismRecipeForm form = MekanismRecipeFormRegistry.getOrBuildForm(typeId);
+            com.google.gson.JsonObject json = null;
+            if (this.overrideJson != null && !this.overrideJson.isBlank()) {
+                try {
+                    com.google.gson.JsonElement parsed = com.google.gson.JsonParser.parseString(this.overrideJson);
+                    if (parsed.isJsonObject()) {
+                        json = parsed.getAsJsonObject();
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            UniversalMekanismRecipeForm form = MekanismRecipeFormRegistry.getOrBuildForm(typeId, json);
             if (form != null) {
                 cir.setReturnValue(form);
             }

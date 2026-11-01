@@ -4,6 +4,32 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.9] - 2026-11-02
+
+### English
+#### Fixed & Improved
+* **Dynamic Recipe Inspection Engine (`MekanismDynamicRecipeInspector`):**
+  * Eliminated phantom gas slots on 1-in 1-out machines (e.g. Mekanism Enriching Chamber, Crusher, Energized Smelter). These machines now strictly render only the item input and item output slots that actually exist in their JSON.
+  * Resolved missing IO slots on complex multi-IO machines:
+    * **Astral Mekanism Mekanical Transform (`astral_mekanism:mekanical_transform`):** Dynamically lays out all 3 item inputs (`itemInputA, B, C`), 2 fluid inputs (`fluidInputA, B`), and item output (`outputItem`).
+    * **Refined Astral Ether / Infusing Condense (`astral_mekanism:infusing_condense`):** Accurately surfaces gas input (`inputGas`) and infusion input (`inputInfusion`) to fluid output (`output`) without creating empty/unused item or gas output slots.
+    * **Astral Crafting Table (`astral_mekanism:astral_crafting`):** Dynamically inspects and lays out up to 5x5 crafting item slots (`itemInputA1` .. `itemInputE5`), fluid input (`fluidInput`), gas input (`gasInput`), and recipe result (`output`).
+  * Intercepts `RecipesUi.matchForm` with the recipe's active `overrideJson`, dynamically building a custom-tailored `UniversalMekanismRecipeForm` per recipe.
+
+---
+
+### 日本語
+#### 修正・改善
+* **動的レシピ解析エンジン（`MekanismDynamicRecipeInspector`）の新設とスロット完全整合化:**
+  * **存在しない余計なガス枠の根絶:** 濃縮室（`mekanism:enriching`）、粉砕機（`crushing`）、製錬機（`smelting`）等のアイテム1入力・1出力機械において、不要なガス入出力枠が一切出現しないよう完全修正。
+  * **複雑な多入出力機械の全スロット完全表示:**
+    * **AME メカニカルトランスフォーム (`astral_mekanism:mekanical_transform`):** 3つのアイテム入力（`itemInputA, B, C`）、2つの流体入力（`fluidInputA, B`）、アイテム出力（`outputItem`）の全6スロットを自動整列配置。
+    * **精製アストラルエーテル / 濃縮機 (`astral_mekanism:infusing_condense`):** ガス入力（`inputGas`）と注入物質入力（`inputInfusion`）、流体出力（`output`）のみを過不足なく表示し、空のアイテム枠や余分なガス出力枠を根絶。
+    * **基礎型拡張作業台 (`astral_mekanism:astral_crafting`):** 最大5×5のアイテムクラフトマトリックス（`itemInputA1`〜`itemInputE5`）、流体入力（`fluidInput`）、ガス入力（`gasInput`）、完成品出力（`output`）をフルサポートし、全てのアイテム・液体・ガスが漏れなく表示されるよう改善。
+  * `RecipesUi.matchForm` にロード中の `overrideJson` を連携させ、JSON内に実際に定義されているスロットのみをピンポイントで動的生成するアーキテクチャを実現。
+
+---
+
 ## [1.0.0-alpha.8] - 2026-11-02
 
 ### English

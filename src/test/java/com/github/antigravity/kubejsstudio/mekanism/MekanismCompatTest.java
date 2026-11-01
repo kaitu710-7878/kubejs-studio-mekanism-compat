@@ -415,4 +415,120 @@ public class MekanismCompatTest {
         assertTrue(startupScript.contains("StartupEvents.registry('mekanism:pigment'"));
         assertTrue(startupScript.contains("StartupEvents.registry('mekanism:slurry'"));
     }
+
+    @Test
+    public void testEnrichingChamberNoPhantomGasSlots() {
+        String enrichingJson = """
+        {
+          "type": "mekanism:enriching",
+          "input": {
+            "ingredient": { "item": "minecraft:nether_star" }
+          },
+          "output": {
+            "item": "astral_mekanism:enriched_nether_star"
+          }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(enrichingJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("mekanism:enriching", json);
+        assertNotNull(form);
+
+        // Crucial test: Enrichment Chamber MUST have exactly 2 slots (1 item in, 1 item out), ZERO gas slots!
+        assertEquals(2, form.slots().size(), "Enriching chamber must only have item in and item out slots");
+        assertEquals(dev.tysontheember.kubejsstudio.core.op.RecipeForm.Role.INPUT, form.slots().get(0).role());
+        assertEquals(dev.tysontheember.kubejsstudio.core.op.RecipeForm.Role.OUTPUT, form.slots().get(1).role());
+
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertEquals("minecraft:nether_star", parsed.slots().get(0));
+        assertEquals("astral_mekanism:enriched_nether_star", parsed.slots().get(1));
+    }
+
+    @Test
+    public void testMekanicalTransformAllSlots() {
+        String transformJson = """
+        {
+            "type": "astral_mekanism:mekanical_transform",
+            "itemInputA": { "ingredient": { "item": "minecraft:diamond_pickaxe" } },
+            "itemInputB": { "ingredient": { "item": "minecraft:soul_soil" }, "amount": 1 },
+            "itemInputC": { "ingredient": { "item": "minecraft:blue_ice" }, "amount": 1 },
+            "fluidInputA": { "fluid": "minecraft:lava", "amount": 1000 },
+            "fluidInputB": { "fluid": "minecraft:water", "amount": 1000 },
+            "outputItem": { "item": "minecraft:basalt", "count": 1 }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(transformJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("astral_mekanism:mekanical_transform", json);
+        assertNotNull(form);
+
+        // 3 item inputs + 2 fluid inputs + 1 item output = 6 slots
+        assertEquals(6, form.slots().size(), "Must have all 3 items, 2 fluids, and 1 item output");
+
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertTrue(parsed.slots().contains("minecraft:diamond_pickaxe"));
+        assertTrue(parsed.slots().contains("minecraft:soul_soil"));
+        assertTrue(parsed.slots().contains("minecraft:blue_ice"));
+        assertTrue(parsed.slots().contains("minecraft:lava"));
+        assertTrue(parsed.slots().contains("minecraft:water"));
+        assertTrue(parsed.slots().contains("minecraft:basalt"));
+    }
+
+    @Test
+    public void testRefinedAstralEtherInfusingCondense() {
+        String etherJson = """
+        {
+            "type": "astral_mekanism:infusing_condense",
+            "inputGas": {
+                "amount": 1,
+                "gas": "astral_mekanism:astral_ether"
+            },
+            "inputInfusion": {
+                "infuse_type": "astral_mekanism:xp",
+                "amount": 100000
+            },
+            "output": {
+                "fluid": "astral_mekanism:refined_astral_ether",
+                "amount": 1
+            }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(etherJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("astral_mekanism:infusing_condense", json);
+        assertNotNull(form);
+
+        // Exactly 3 slots: Gas Input, Infusion Input, Fluid Output. ZERO phantom item slots!
+        assertEquals(3, form.slots().size());
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertEquals("astral_mekanism:astral_ether", parsed.slots().get(0));
+        assertEquals("astral_mekanism:xp", parsed.slots().get(1));
+        assertEquals("astral_mekanism:refined_astral_ether", parsed.slots().get(2));
+    }
+
+    @Test
+    public void testAstralCraftingTableAllSlots() {
+        String craftingJson = """
+        {
+            "type": "astral_mekanism:astral_crafting",
+            "itemInputA1": { "ingredient": { "item": "astral_mekanism:alloy_elastic" } },
+            "itemInputC3": { "ingredient": { "item": "evolvedmekanism:alloyer" } },
+            "fluidInput": { "fluid": "minecraft:lava", "amount": 10000 },
+            "gasInput": { "gas": "astral_mekanism:astral_ether", "amount": 10000 },
+            "output": { "item": "astral_mekanism:astral_alloyer", "count": 1 }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(craftingJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("astral_mekanism:astral_crafting", json);
+        assertNotNull(form);
+
+        // Contains grid items + fluid + gas + output
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertTrue(parsed.slots().contains("astral_mekanism:alloy_elastic"));
+        assertTrue(parsed.slots().contains("evolvedmekanism:alloyer"));
+        assertTrue(parsed.slots().contains("minecraft:lava"));
+        assertTrue(parsed.slots().contains("astral_mekanism:astral_ether"));
+        assertTrue(parsed.slots().contains("astral_mekanism:astral_alloyer"));
+    }
 }
