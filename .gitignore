@@ -20,6 +20,7 @@ build
 # other
 eclipse
 run
+libs/
 logs/
 *.log
 *.log.gz

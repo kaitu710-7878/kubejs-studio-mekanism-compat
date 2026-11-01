@@ -4,6 +4,28 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.5] - 2026-11-01
+
+### English
+#### Changed & Improved
+* **Native LDLib2 UI Integration & Flawless Visual Alignment:**
+  * Eliminated vanilla Forge `Screen` overlay and coordinate-based button placement that overlapped KubeJS Studio's interface.
+  * Injected native LDLib2 `Button` directly into `CreateUi`'s mode bar beside `Items`, `Blocks`, and `Fluids` (`gas-mode-btn`).
+  * Ensured the Gases button only appears when navigating inside the **Create** tab, resolving persistent visibility on unrelated tabs.
+  * Created [`GasEditorPanel.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/client/GasEditorPanel.java) entirely with LDLib2 widgets (`TextField`, `Label`, `Button`, `ScrollerView`, live color preview swatch with `ColorRectTexture`) matching KubeJS Studio's exact dark styling and Taffy layout rules.
+
+---
+
+### 日本語
+#### 変更・改善
+* **KubeJS StudioネイティブLDLib2 UIへの完全統合とデザイン調和:**
+  * バニラForgeのScreenオーバーレイや座標固定によるボタン配置を完全廃止し、Studio本体のUIとの位置重複を解決。
+  * `CreateUi` のモードボタングループ（Items / Blocks / Fluids）の並びへ、LDLib2ネイティブの `Button` として「**Gases**」を直接注入。Flexbox自動レイアウトにより綺麗に等幅配置。
+  * Createタブを開いている時だけボタングループ内に現れる構造とし、他タブ（Recipes, Tags, Loot等）での不要な常時表示を完全解消。
+  * 純粋なLDLib2ウィジェット（`TextField`, `Label`, `Button`, `ScrollerView`、`ColorRectTexture` によるリアルタイム色見本）で構成された [`GasEditorPanel.java`](src/main/java/com/github/antigravity/kubejsstudio/mekanism/client/GasEditorPanel.java) を実装。KubeJS Studioと100%同一のテーマ・質感・操作感を実現。
+
+---
+
 ## [1.0.0-alpha.4] - 2026-11-01
 
 ### English

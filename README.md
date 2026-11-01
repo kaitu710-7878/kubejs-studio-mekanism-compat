@@ -25,7 +25,7 @@
 
 ### Installation
 1. Ensure Minecraft Forge 1.20.1 and KubeJS / Mekanism are installed in your mods folder.
-2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.4.jar` into your `mods/` directory.
+2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.5.jar` into your `mods/` directory.
 3. Launch Minecraft, open KubeJS Studio (default hotkey: `K`), go to the **Create** tab, and click the **Gases** toggle button!
 
 ### License
