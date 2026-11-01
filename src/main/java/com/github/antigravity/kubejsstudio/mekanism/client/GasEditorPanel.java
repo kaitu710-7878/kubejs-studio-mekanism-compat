@@ -1,5 +1,6 @@
 package com.github.antigravity.kubejsstudio.mekanism.client;
 
+import com.github.antigravity.kubejsstudio.mekanism.KubeJSStudioMekanismCompat;
 import com.github.antigravity.kubejsstudio.mekanism.gas.MekanismGasDefinition;
 import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
@@ -16,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Native LDLib2 UIElement panel for editing and creating Mekanism gases/chemicals,
- * seamlessly matching KubeJS Studio's right-pane editor layout, styling, and classes.
+ * Native LDLib2 UIElement panel for editing and creating Mekanism chemicals (Gases, Infuse Types, Pigments, Slurries),
+ * seamlessly matching KubeJS Studio's right-pane editor layout, styling, and classes with ZERO text overlap.
  */
 public class GasEditorPanel extends UIElement {
     private static final float LABEL_WIDTH = 110.0f;
@@ -32,6 +33,10 @@ public class GasEditorPanel extends UIElement {
     private final TextField radioactivityField;
     private final TextField tagsField;
     private final Label statusLabel;
+    private final Label headerTitleLabel;
+    private final Label headerSubLabel;
+
+    private Runnable onQueuedCallback;
 
     public GasEditorPanel() {
         this.addClass("panel");
@@ -60,14 +65,14 @@ public class GasEditorPanel extends UIElement {
             l.alignItems(AlignItems.BASELINE);
         });
 
-        Label titleLabel = new Label();
-        titleLabel.setText("New chemical");
+        this.headerTitleLabel = new Label();
+        this.headerTitleLabel.setText("New chemical");
 
-        Label subLabel = new Label();
-        subLabel.setText("Give it an id, then queue it");
-        subLabel.addClass("muted");
+        this.headerSubLabel = new Label();
+        this.headerSubLabel.setText("Give it an id, then queue it");
+        this.headerSubLabel.addClass("muted");
 
-        headerLeft.addChildren(titleLabel, subLabel);
+        headerLeft.addChildren(this.headerTitleLabel, this.headerSubLabel);
 
         Label outputLabel = new Label();
         outputLabel.setText("Output: KubeJS only");
@@ -150,8 +155,8 @@ public class GasEditorPanel extends UIElement {
         });
         updateSwatch(0x00FFCC);
 
-        this.colorField.setTextResponder(text -> {
-            int parsed = parseColor(text);
+        this.colorField.addEventListener("change", ev -> {
+            int parsed = parseColor(this.colorField.getValue());
             updateSwatch(parsed);
         });
 
@@ -163,7 +168,7 @@ public class GasEditorPanel extends UIElement {
             l.flexGrow(1.0f);
         });
         colorContainer.addChildren(this.colorField, this.colorSwatch);
-        scroller.addScrollViewChild(createFieldRow("Colour", colorContainer));
+        scroller.addScrollViewChild(createFieldRow("Tint colour", colorContainer));
 
         // Texture Row
         this.textureField = new TextField();
@@ -188,13 +193,13 @@ public class GasEditorPanel extends UIElement {
         // Divider
         this.addChild(createDivider());
 
-        // 5. Bottom Action Row: [Status] ... [Revert] [Queue]
+        // 5. Bottom Action Bar: Revert, Queue
         UIElement bottomRow = new UIElement();
         bottomRow.layout(l -> {
             l.flexDirection(FlexDirection.ROW);
-            l.gapAll(8.0f);
-            l.alignItems(AlignItems.CENTER);
             l.justifyContent(AlignContent.FLEX_END);
+            l.alignItems(AlignItems.CENTER);
+            l.gapAll(8.0f);
             l.widthPercent(100.0f);
         });
 
@@ -216,6 +221,43 @@ public class GasEditorPanel extends UIElement {
 
         bottomRow.addChildren(this.statusLabel, revertBtn, queueBtn);
         this.addChild(bottomRow);
+    }
+
+    public void setOnQueued(Runnable callback) {
+        this.onQueuedCallback = callback;
+    }
+
+    public void startNew() {
+        this.headerTitleLabel.setText("New chemical");
+        this.headerSubLabel.setText("Give it an id, then queue it");
+        this.nsField.setText("kubejs");
+        this.pathField.setText("");
+        this.displayNameField.setText("");
+        this.colorField.setText("#00FFCC");
+        updateSwatch(0x00FFCC);
+        this.textureField.setText("mekanism:liquid/liquid");
+        this.radioactivityField.setText("0.0");
+        this.tagsField.setText("forge:gases");
+        this.statusLabel.setText("");
+    }
+
+    public void selectGas(String fullId) {
+        if (fullId == null || fullId.isBlank()) {
+            startNew();
+            return;
+        }
+
+        this.headerTitleLabel.setText(fullId);
+        this.headerSubLabel.setText("Editing chemical properties");
+
+        int colon = fullId.indexOf(':');
+        String ns = colon > 0 ? fullId.substring(0, colon) : "kubejs";
+        String path = colon > 0 ? fullId.substring(colon + 1) : fullId;
+
+        this.nsField.setText(ns);
+        this.pathField.setText(path);
+        this.displayNameField.setText(path);
+        this.statusLabel.setText("Selected " + fullId);
     }
 
     private static UIElement createDivider() {
@@ -266,13 +308,7 @@ public class GasEditorPanel extends UIElement {
     }
 
     private void handleRevert() {
-        this.pathField.setText("");
-        this.displayNameField.setText("");
-        this.colorField.setText("#00FFCC");
-        updateSwatch(0x00FFCC);
-        this.textureField.setText("mekanism:liquid/liquid");
-        this.radioactivityField.setText("0.0");
-        this.tagsField.setText("forge:gases");
+        startNew();
         this.statusLabel.setText("Reverted changes");
     }
 
@@ -329,6 +365,14 @@ public class GasEditorPanel extends UIElement {
         StudioWorkspaceHelper.queueGasIntoWorkspace(def);
         GasCreateUi.queuePendingGas(def);
 
-        this.statusLabel.setText("§aQueued " + fullId + " into workspace! Apply below.");
+        this.statusLabel.setText("§aQueued '" + fullId + "'! Saved to startup_scripts.");
+
+        if (this.onQueuedCallback != null) {
+            try {
+                this.onQueuedCallback.run();
+            } catch (Throwable t) {
+                KubeJSStudioMekanismCompat.LOGGER.warn("Error running onQueuedCallback: {}", t.getMessage());
+            }
+        }
     }
 }

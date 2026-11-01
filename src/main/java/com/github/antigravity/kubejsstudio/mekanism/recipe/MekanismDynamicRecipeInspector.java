@@ -32,6 +32,11 @@ public final class MekanismDynamicRecipeInspector {
         List<UniversalMekanismRecipeForm.SlotDef> slots = new ArrayList<>();
         List<RecipeForm.Field> fields = new ArrayList<>();
 
+        // Check for Mekanism MekData 3x3 Crafting (jetpack, laser, etc.)
+        if ("mekanism:mek_data".equals(typeId) || (json.has("pattern") && json.has("key"))) {
+            return buildMekDataCraftingForm(typeId, json);
+        }
+
         // Check for 5x5 Astral Crafting grid (itemInputA1 .. itemInputE5)
         boolean isGridCrafting = json.has("itemInputA1") || json.has("itemInputC3");
         if (isGridCrafting) {
@@ -69,7 +74,10 @@ public final class MekanismDynamicRecipeInspector {
             }
         }
 
-        // If no inputs were detected (e.g. generation recipe), that's fine.
+        // Sort detected slots: Items first, then Fluids / Chemicals for intuitive visual layout
+        detectedInputs.sort(Comparator.comparingInt(s -> s.role == RecipeForm.Role.INPUT ? 0 : 1));
+        detectedOutputs.sort(Comparator.comparingInt(s -> s.role == RecipeForm.Role.OUTPUT ? 0 : 1));
+
         // Layout the slots in col/row grid
         int inputRow = 0;
         int inputCol = 0;
@@ -144,6 +152,38 @@ public final class MekanismDynamicRecipeInspector {
         ));
 
         return new UniversalMekanismRecipeForm(typeId, "Astral: Crafting Table", slots, fields);
+    }
+
+    public static UniversalMekanismRecipeForm buildMekDataCraftingForm(String typeId, JsonObject json) {
+        List<UniversalMekanismRecipeForm.SlotDef> slots = new ArrayList<>();
+        // 3x3 Crafting Grid
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 3; c++) {
+                slots.add(new UniversalMekanismRecipeForm.SlotDef(
+                        new RecipeForm.Slot(RecipeForm.Role.INPUT, "Slot " + (r * 3 + c + 1), c, r),
+                        "grid_" + (r * 3 + c), null, 1
+                ));
+            }
+        }
+        // Result slot at (col 4, row 1)
+        slots.add(new UniversalMekanismRecipeForm.SlotDef(
+                new RecipeForm.Slot(RecipeForm.Role.OUTPUT, "Result", 4, 1),
+                "result", null, 1
+        ));
+
+        return new UniversalMekanismRecipeForm(typeId, "Mekanism: Data Crafting", slots, List.of()) {
+            @Override
+            public RecipeForm.Parsed parse(JsonObject j) {
+                MekDataRecipeParser.ParsedMekData parsed = MekDataRecipeParser.parse(j);
+                if (parsed == null) return super.parse(j);
+                List<String> slotVals = new ArrayList<>();
+                for (int i = 0; i < 9; i++) {
+                    slotVals.add(parsed.grid()[i]);
+                }
+                slotVals.add(parsed.result());
+                return new RecipeForm.Parsed(slotVals, Map.of());
+            }
+        };
     }
 
     private static DetectedSlot classifySlot(String key, JsonElement element) {

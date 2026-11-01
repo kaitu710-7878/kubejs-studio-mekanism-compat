@@ -531,4 +531,156 @@ public class MekanismCompatTest {
         assertTrue(parsed.slots().contains("astral_mekanism:astral_ether"));
         assertTrue(parsed.slots().contains("astral_mekanism:astral_alloyer"));
     }
+
+    @Test
+    public void testMekDataJetpackRecipeParsing() {
+        String jetpackJson = """
+        {
+          "type": "mekanism:mek_data",
+          "key": {
+            "C": { "tag": "forge:circuits/basic" },
+            "I": { "tag": "forge:ingots/tin" },
+            "S": { "tag": "forge:ingots/steel" },
+            "T": { "item": "mekanism:basic_chemical_tank" }
+          },
+          "pattern": [
+            "SCS",
+            "ITI",
+            " I "
+          ],
+          "result": {
+            "item": "mekanism:jetpack"
+          }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(jetpackJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.MekDataRecipeParser.ParsedMekData parsed =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekDataRecipeParser.parse(json);
+
+        assertNotNull(parsed);
+        assertTrue(parsed.isShaped());
+        assertEquals("mekanism:jetpack", parsed.result());
+        assertEquals(1, parsed.resultCount());
+
+        // Row 0: S, C, S
+        assertEquals("#forge:ingots/steel", parsed.grid()[0]);
+        assertEquals("#forge:circuits/basic", parsed.grid()[1]);
+        assertEquals("#forge:ingots/steel", parsed.grid()[2]);
+
+        // Row 1: I, T, I
+        assertEquals("#forge:ingots/tin", parsed.grid()[3]);
+        assertEquals("mekanism:basic_chemical_tank", parsed.grid()[4]);
+        assertEquals("#forge:ingots/tin", parsed.grid()[5]);
+
+        // Row 2: " ", I, " "
+        assertEquals("", parsed.grid()[6]);
+        assertEquals("#forge:ingots/tin", parsed.grid()[7]);
+        assertEquals("", parsed.grid()[8]);
+    }
+
+    @Test
+    public void testMekDataLaserRecipeParsing() {
+        String laserJson = """
+        {
+          "type": "mekanism:mek_data",
+          "key": {
+            "C": { "item": "mekanism:steel_casing" },
+            "D": { "tag": "forge:gems/diamond" },
+            "O": { "item": "mekanism:energy_tablet" },
+            "R": { "tag": "forge:alloys/reinforced" }
+          },
+          "pattern": [
+            "ROR",
+            "RDR",
+            "RCR"
+          ],
+          "result": {
+            "item": "mekanism:laser"
+          }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(laserJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.MekDataRecipeParser.ParsedMekData parsed =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekDataRecipeParser.parse(json);
+
+        assertNotNull(parsed);
+        assertTrue(parsed.isShaped());
+        assertEquals("mekanism:laser", parsed.result());
+
+        // Row 0: R, O, R
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[0]);
+        assertEquals("mekanism:energy_tablet", parsed.grid()[1]);
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[2]);
+
+        // Row 1: R, D, R
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[3]);
+        assertEquals("#forge:gems/diamond", parsed.grid()[4]);
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[5]);
+
+        // Row 2: R, C, R
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[6]);
+        assertEquals("mekanism:steel_casing", parsed.grid()[7]);
+        assertEquals("#forge:alloys/reinforced", parsed.grid()[8]);
+    }
+
+    @Test
+    public void testAstralMekanismReconstructionCreativeAlloyDynamicInspection() {
+        String reconstructionJson = """
+        {
+            "type": "astral_mekanism:reconstruction",
+            "duration": 256,
+            "energyRequired": 10000000000000,
+            "itemNotConsumed": false,
+            "fluidInput": {
+                "amount": 1000000,
+                "fluid": "astral_mekanism:wisdom_rivulet"
+            },
+            "gasInput": {
+                "amount": 100000000,
+                "gas": "astral_mekanism:interstellar_antimatter"
+            },
+            "gasOutput": {
+                "amount": 1000000000,
+                "gas": "mekanism:lithium"
+            },
+            "itemInput": {
+                "amount": 4,
+                "ingredient": {
+                    "item": "astral_mekanism:coodinate_alloy"
+                }
+            },
+            "itemOutput": {
+                "item": "evolvedmekanism:alloy_creative"
+            }
+        }
+        """;
+        JsonObject json = JsonParser.parseString(reconstructionJson).getAsJsonObject();
+        com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm form =
+                com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry.getOrBuildForm("astral_mekanism:reconstruction", json);
+
+        assertNotNull(form);
+
+        // Exactly 5 slots: 1 Item Input, 1 Fluid Input, 1 Gas Input, 1 Item Output, 1 Gas Output
+        assertEquals(5, form.slots().size(), "Must have exactly 5 detected slots for reconstruction");
+
+        // Verify slot positions: item input must be at col 0, row 0 (top-left)
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Slot firstInputSlot = form.slots().get(0);
+        assertEquals(dev.tysontheember.kubejsstudio.core.op.RecipeForm.Role.INPUT, firstInputSlot.role());
+        assertEquals(0, firstInputSlot.col());
+        assertEquals(0, firstInputSlot.row());
+
+        // Parse JSON and verify every single value is extracted without null, empty, or ~
+        dev.tysontheember.kubejsstudio.core.op.RecipeForm.Parsed parsed = form.parse(json);
+        assertNotNull(parsed);
+
+        assertTrue(parsed.slots().contains("astral_mekanism:coodinate_alloy"));
+        assertTrue(parsed.slots().contains("astral_mekanism:wisdom_rivulet"));
+        assertTrue(parsed.slots().contains("astral_mekanism:interstellar_antimatter"));
+        assertTrue(parsed.slots().contains("evolvedmekanism:alloy_creative"));
+        assertTrue(parsed.slots().contains("mekanism:lithium"));
+
+        // Verify fields
+        assertEquals("256", parsed.fields().get("duration"));
+        assertEquals("10000000000000", parsed.fields().get("energyRequired"));
+    }
 }

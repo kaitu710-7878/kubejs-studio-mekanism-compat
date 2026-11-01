@@ -105,12 +105,12 @@ public class UniversalMekanismRecipeForm implements RecipeForm {
             List<String> candidates;
             if (isOutput) {
                 candidates = isChemical
-                        ? List.of("gasOutput", "chemicalOutput", "slurryOutput", "fluidOutput", "output", "leftGasOutput", "rightGasOutput")
-                        : List.of("itemOutput", "output", "result", "item");
+                        ? List.of("gasOutput", "outputGas", "chemicalOutput", "slurryOutput", "fluidOutput", "output", "leftGasOutput", "rightGasOutput")
+                        : List.of("itemOutput", "outputItem", "output_item", "output", "result", "item");
             } else {
                 candidates = isChemical
-                        ? List.of("gasInput", "chemicalInput", "slurryInput", "fluidInput", "leftInput", "rightInput", "input")
-                        : List.of("itemInput", "input", "mainInput", "extraInput", "ingredient");
+                        ? List.of("gasInput", "inputGas", "chemicalInput", "slurryInput", "fluidInput", "inputFluid", "leftInput", "rightInput", "input")
+                        : List.of("itemInput", "inputItem", "input_item", "input", "mainInput", "extraInput", "ingredient");
             }
 
             for (String candidate : candidates) {

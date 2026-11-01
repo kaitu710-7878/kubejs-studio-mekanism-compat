@@ -5,7 +5,11 @@ import com.github.antigravity.kubejsstudio.mekanism.client.GasEditorPanel;
 import com.github.antigravity.kubejsstudio.mekanism.config.MekanismCompatConfig;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.SplitView;
+import dev.tysontheember.kubejsstudio.client.ui.kit.BrowserList;
+import dev.tysontheember.kubejsstudio.client.ui.kit.PendingDock;
 import dev.tysontheember.kubejsstudio.client.ui.screen.CreateUi;
 import dev.tysontheember.kubejsstudio.core.op.CreateEntry;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +23,7 @@ import java.util.Map;
 
 /**
  * Mixin for KubeJS Studio's CreateUi.
- * Flawlessly integrates the "Chemicals" mode button into the mode bar (Items, Blocks, Fluids, Chemicals)
+ * Seamlessly integrates the "Chemicals" mode button into the mode bar (Items, Blocks, Fluids, Chemicals)
  * with 100% synchronized state toggling, zero overlapping text/widgets, and smooth bidirectional switching.
  */
 @Mixin(value = CreateUi.class, remap = false)
@@ -29,10 +33,34 @@ public abstract class CreateUiMixin {
     private Map<CreateEntry.Kind, Button> modeBtns;
 
     @Shadow
+    private CreateEntry.Kind mode;
+
+    @Shadow
+    private PendingDock dock;
+
+    @Shadow
+    private BrowserList list;
+
+    @Shadow
+    private Label headerLabel;
+
+    @Shadow
+    private Label statusLabel;
+
+    @Shadow
+    private ScrollerView rows;
+
+    @Shadow
     private UIElement root;
 
     @Shadow
     private void syncToggle() {}
+
+    @Shadow
+    private void refreshList() {}
+
+    @Shadow
+    private void startNew() {}
 
     @Unique
     private Button chemicalBtn;
@@ -74,9 +102,17 @@ public abstract class CreateUiMixin {
                 l.widthPercent(100.0f);
                 l.heightPercent(100.0f);
             });
+
+            // Wire Queue callback directly to Studio's PendingDock refresh
+            this.chemicalEditor.setOnQueued(() -> {
+                if (this.dock != null) {
+                    this.dock.refresh();
+                }
+            });
+
             this.studioEditorContainer.addChild(this.chemicalEditor);
 
-            // Create and inject "Chemicals" mode Button
+            // Create and inject "Chemicals" mode Button matching Studio styling
             this.chemicalBtn = new Button();
             this.chemicalBtn.setText("Chemicals");
             this.chemicalBtn.addClass("gas-mode-btn");
@@ -101,15 +137,30 @@ public abstract class CreateUiMixin {
     }
 
     /**
-     * Synchronizes toggle button highlight state.
+     * Prevents Studio from overwriting the right pane with Fluid/Item/Block fields when in Chemical mode.
+     */
+    @Inject(method = "startNew", at = @At("HEAD"), cancellable = true)
+    private void onStartNew(CallbackInfo ci) {
+        if (this.chemicalActive) {
+            if (this.chemicalEditor != null) {
+                this.chemicalEditor.startNew();
+            }
+            ci.cancel();
+        }
+    }
+
+    /**
+     * Synchronizes toggle button highlight state across all buttons.
      */
     @Inject(method = "syncToggle", at = @At("RETURN"))
     private void onSyncToggle(CallbackInfo ci) {
         if (this.chemicalBtn != null) {
             if (this.chemicalActive) {
                 this.chemicalBtn.addClass("seg-active");
-                for (Button b : this.modeBtns.values()) {
-                    b.removeClass("seg-active");
+                if (this.modeBtns != null) {
+                    for (Button b : this.modeBtns.values()) {
+                        b.removeClass("seg-active");
+                    }
                 }
             } else {
                 this.chemicalBtn.removeClass("seg-active");
@@ -120,16 +171,20 @@ public abstract class CreateUiMixin {
     @Unique
     private void activateChemicalMode() {
         this.chemicalActive = true;
+        // Crucial: reset this.mode so subsequent clicks on the previous mode (e.g. Fluids) will never be skipped by `if (this.mode == kind) return;`!
+        this.mode = null;
 
-        // Remove active state from Items, Blocks, Fluids
-        for (Button b : this.modeBtns.values()) {
-            b.removeClass("seg-active");
+        // Remove active state from Items, Blocks, Fluids buttons
+        if (this.modeBtns != null) {
+            for (Button b : this.modeBtns.values()) {
+                b.removeClass("seg-active");
+            }
         }
         if (this.chemicalBtn != null) {
             this.chemicalBtn.addClass("seg-active");
         }
 
-        // Hide all original Studio editor widgets and show GasEditorPanel
+        // Hide all original Studio editor widgets completely to eliminate any text/widget overlap
         if (this.studioEditorContainer != null) {
             for (UIElement child : this.studioEditorContainer.getChildren()) {
                 if (child == this.chemicalEditor) {
@@ -138,6 +193,10 @@ public abstract class CreateUiMixin {
                     child.setDisplay(false);
                 }
             }
+        }
+
+        if (this.chemicalEditor != null) {
+            this.chemicalEditor.startNew();
         }
     }
 

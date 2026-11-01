@@ -2,14 +2,20 @@ package com.github.antigravity.kubejsstudio.mekanism.mixin;
 
 import com.github.antigravity.kubejsstudio.mekanism.recipe.MekanismRecipeFormRegistry;
 import com.github.antigravity.kubejsstudio.mekanism.recipe.UniversalMekanismRecipeForm;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dev.tysontheember.kubejsstudio.client.ui.kit.FilterDropdown;
 import dev.tysontheember.kubejsstudio.client.ui.screen.RecipesUi;
+import dev.tysontheember.kubejsstudio.core.introspect.GameState;
 import dev.tysontheember.kubejsstudio.core.op.RecipeForm;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -23,19 +29,54 @@ public abstract class RecipesUiMixin {
     @Shadow
     private String overrideJson;
 
+    @Unique
+    private static final ThreadLocal<String> CURRENT_RECIPE_JSON = new ThreadLocal<>();
+
+    @Inject(method = "loadForOverride", at = @At("HEAD"))
+    private void onLoadForOverrideHead(String target, CallbackInfo ci) {
+        try {
+            String jsonStr = GameState.recipeJsonById(target);
+            if (jsonStr != null && !jsonStr.isBlank()) {
+                CURRENT_RECIPE_JSON.set(jsonStr);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    @Inject(method = "loadForOverride", at = @At("RETURN"))
+    private void onLoadForOverrideReturn(String target, CallbackInfo ci) {
+        CURRENT_RECIPE_JSON.remove();
+    }
+
+    @Inject(method = "loadForm", at = @At("HEAD"))
+    private void onLoadFormHead(String target, String jsonStr, CallbackInfoReturnable<Boolean> cir) {
+        if (jsonStr != null && !jsonStr.isBlank()) {
+            CURRENT_RECIPE_JSON.set(jsonStr);
+        }
+    }
+
+    @Inject(method = "loadForm", at = @At("RETURN"))
+    private void onLoadFormReturn(String target, String jsonStr, CallbackInfoReturnable<Boolean> cir) {
+        CURRENT_RECIPE_JSON.remove();
+    }
+
     /**
-     * Intercepts recipe form matching so any Mekanism, Astral Mekanism, or universal gas machine recipe
-     * cleanly resolves to a dedicated or auto-inferred UniversalMekanismRecipeForm instead of null/custom.
-     * When overriding an existing recipe, the JSON is dynamically inspected to produce exact slots
-     * (eliminating phantom gas slots and capturing all complex multi-IO items/fluids/gases).
+     * Intercepts recipe form matching so any Mekanism (including custom mek_data crafting),
+     * Astral Mekanism, or universal gas machine recipe cleanly resolves to a dedicated or
+     * dynamically inferred UniversalMekanismRecipeForm.
+     * With the active JSON properly supplied from CURRENT_RECIPE_JSON, dynamic slot inspection is 100% accurate!
      */
     @Inject(method = "matchForm", at = @At("HEAD"), cancellable = true)
     private void onMatchForm(String typeId, CallbackInfoReturnable<RecipeForm> cir) {
         if (MekanismRecipeFormRegistry.supports(typeId)) {
-            com.google.gson.JsonObject json = null;
-            if (this.overrideJson != null && !this.overrideJson.isBlank()) {
+            JsonObject json = null;
+            String rawJson = CURRENT_RECIPE_JSON.get();
+            if (rawJson == null || rawJson.isBlank()) {
+                rawJson = this.overrideJson;
+            }
+
+            if (rawJson != null && !rawJson.isBlank()) {
                 try {
-                    com.google.gson.JsonElement parsed = com.google.gson.JsonParser.parseString(this.overrideJson);
+                    JsonElement parsed = JsonParser.parseString(rawJson);
                     if (parsed.isJsonObject()) {
                         json = parsed.getAsJsonObject();
                     }

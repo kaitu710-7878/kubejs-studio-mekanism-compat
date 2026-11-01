@@ -4,6 +4,43 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.10] - 2026-11-02
+
+### English
+#### Fixed & Improved
+* **Mekanism Custom Crafting Recipes (`mekanism:mek_data`) Visual Support:**
+  * Added `MekDataRecipeParser` and dynamic 3x3 crafting grid mapping (`buildMekDataCraftingForm`) for Mekanism's proprietary `mekanism:mek_data` recipe serializer.
+  * Essential Mekanism equipment recipes (Jetpacks, Armored Jetpacks, Lasers, Laser Amplifiers, Energy Cubes, Chemical Tanks, Free Runners, etc.) that retain NBT/gas/energy data now natively render and can be edited inside KubeJS Studio's 3x3 shaped and shapeless crafting grids!
+* **Create Tab Lifecycle, Mode Switching & Overlap Eradication:**
+  * Fixed bidirectional mode switching: Clicking standard mode buttons (`Items`, `Blocks`, `Fluids`) after selecting `Chemicals` now seamlessly resets the mode state, ensuring Studio cleanly switches back to native editors without staying stuck or leaving multiple mode buttons highlighted.
+  * Eradicated all stacked text / overlapping tooltips (`New fluid` and `Give it an id, then queue it` colliding): Studio's entire native right-pane editor container is strictly hidden when `Chemicals` mode is active, giving `GasEditorPanel` isolated layout control.
+  * Intercepted `startNew` in `CreateUiMixin` to prevent Studio from executing conflicting Item/Fluid row rebuilds when in `Chemicals` mode.
+* **Persistent Chemical Creation & Pending Dock Synchronization:**
+  * Wired `GasEditorPanel`'s Queue button directly to Studio's `PendingDock.refresh()`, instantly reflecting queued chemicals in the bottom dock bar.
+  * Added dual-export pipeline: queued chemicals are registered into Studio's `Workspace` and simultaneously persisted to `kubejs/startup_scripts/mekanism_chemicals.js`.
+* **Dynamic Inspection & Slot Value Matching for Astral Reconstruction (`creative_alloy`):**
+  * Fixed recipe JSON inspection timing: captured active recipe JSON via `ThreadLocal` during `loadForm` and `loadForOverride` so `matchForm` always receives the full recipe JSON rather than null.
+  * Astral Mekanism's `astral_mekanism:reconstruction/creative_alloy` now accurately resolves all 5 slots (Item Input, Fluid Input, Gas Input, Item Output, Gas Output) with items placed at the top and zero phantom/missing slots or tilde (`~`) values.
+
+---
+
+### 日本語
+#### 修正・改善
+* **本家Mekanism独自クラフトレシピ（`mekanism:mek_data`）の完全ビジュアル表示対応:**
+  * `MekDataRecipeParser` および動的3×3クラフトグリッド生成機構（`buildMekDataCraftingForm`）を新設。
+  * ジェットパック（`mekanism:jetpack`）、レーザー（`mekanism:laser`）、レーザー増幅器、エネルギーキューブ、化学物質タンク、フリーランナーなど、エネルギーやガス等のNBTを引き継ぐMekanism公式クラフトレシピ（`mekanism:mek_data`）が、KubeJS Studio内のRecipesタブで3×3作業台定形・不定形クラフトとして完璧にビジュアル表示・編集できるようになりました。
+* **Createタブの相互切替バグ・ボタン常時点灯・文字重なりの完全根絶:**
+  * `Chemicals` モード選択後に `Fluids` や `Items` 等の標準ボタンを押した際、`this.mode` をリセットして確実にStudio側のモード変更処理（`setMode`）をフル実行させ、元のエディタへ100%復帰できるように修正。`Fluids` と `Chemicals` の両方が緑色に点灯し続ける問題を根絶。
+  * Studio本体の右ペインエディタ要素全体を `Chemicals` モード中は完全に非表示（`setDisplay(false)`）化し、`startNew` への割り込みも行うことで、「New fluid」や入力欄の文字が重なって潰れる二重描画バグ（画像5の現象）を完全に排除。
+* **ガス作成（Queue）機能の保留ドック（PendingDock）即座反映＆ファイル永続化:**
+  * Queueボタン押下時に `dock.refresh()` を明示的に呼び出し、画面下部の保留ドック（Pending Changes）に即座に追加された化学物質が反映されるよう連携。
+  * Studioの `Workspace` へのキュー登録に加え、`kubejs/startup_scripts/mekanism_chemicals.js` への即座の実ファイル書き出し・更新を実行し、作成内容が確実に保存・適用されるように改善。
+* **AME 精錬・再構築（`reconstruction/creative_alloy`）の動的スロット・値反映の完全修正:**
+  * レシピ読み込み処理（`loadForm`, `loadForOverride`）の冒頭で対象レシピのJSONを `ThreadLocal` に保持し、`matchForm` の時点で確実に実JSONが動的解析エンジン（`MekanismDynamicRecipeInspector`）に渡るよう修正。
+  * `astral_mekanism:reconstruction/creative_alloy` の5つの全スロット（アイテム入力、流体入力、ガス入力、アイテム出力、ガス出力）および所要時間（`duration: 256`）・必要エネルギー（`energyRequired: 10000000000000`）が空枠やチルダ（`~`）になることなく完璧に整列・表示されるようになりました。
+
+---
+
 ## [1.0.0-alpha.9] - 2026-11-02
 
 ### English
