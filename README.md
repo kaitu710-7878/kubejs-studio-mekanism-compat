@@ -28,7 +28,7 @@
 
 ### Installation
 1. Ensure Minecraft Forge 1.20.1 and KubeJS / Mekanism are installed in your mods folder.
-2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.10.jar` into your `mods/` directory.
+2. Place `kubejs_studio_mekanism_compat-1.0.0-alpha.11.jar` into your `mods/` directory.
 3. Launch Minecraft, open KubeJS Studio (default hotkey: `K`), go to the **Create** tab, and click the **Chemicals** toggle button!
 
 ### License
@@ -60,7 +60,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 
 ### 導入手順
 1. modsフォルダにMinecraft Forge 1.20.1、KubeJS、Mekanismが導入されていることを確認します。
-2. ビルドされた `kubejs_studio_mekanism_compat-1.0.0-alpha.10.jar` を `mods/` フォルダへ配置します。
+2. ビルドされた `kubejs_studio_mekanism_compat-1.0.0-alpha.11.jar` を `mods/` フォルダへ配置します。
 3. ゲームを起動し、KubeJS Studio（デフォルトキー: `K`）を開いて、Createタブの「Chemicals」を選択します。
 
 ### ライセンス

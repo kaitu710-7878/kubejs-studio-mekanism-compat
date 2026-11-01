@@ -84,14 +84,17 @@ public abstract class CreateUiMixin {
             UIElement modeBar = firstBtn.getParent();
             if (modeBar == null) return;
 
-            // Find horizontal SplitView in CreateUi
-            SplitView hSplit = findSplitViewInTree(this.root);
-            if (hSplit == null || hSplit.second == null) {
-                KubeJSStudioMekanismCompat.LOGGER.warn("Could not find SplitView.second in CreateUi for GasEditorPanel injection.");
-                return;
+            // Direct resolution: this.rows is an immediate child of Studio's right editor pane container!
+            if (this.rows != null && this.rows.getParent() != null) {
+                this.studioEditorContainer = this.rows.getParent();
+            } else {
+                this.studioEditorContainer = findRightPaneInTree(this.root);
             }
 
-            this.studioEditorContainer = hSplit.second;
+            if (this.studioEditorContainer == null) {
+                KubeJSStudioMekanismCompat.LOGGER.warn("Could not find right editor pane in CreateUi for GasEditorPanel injection.");
+                return;
+            }
 
             // Create and inject our native GasEditorPanel into the right editor pane
             this.chemicalEditor = new GasEditorPanel();
@@ -121,7 +124,7 @@ public abstract class CreateUiMixin {
             this.chemicalBtn.setOnClick(ev -> activateChemicalMode());
 
             modeBar.addChild(this.chemicalBtn);
-            KubeJSStudioMekanismCompat.LOGGER.info("CreateUiMixin successfully injected Chemicals mode into CreateUi!");
+            KubeJSStudioMekanismCompat.LOGGER.info("CreateUiMixin successfully injected Chemicals mode into CreateUi right editor pane!");
 
         } catch (Throwable t) {
             KubeJSStudioMekanismCompat.LOGGER.error("Error in CreateUiMixin initialization: {}", t.getMessage(), t);
@@ -222,11 +225,16 @@ public abstract class CreateUiMixin {
     }
 
     @Unique
-    private static SplitView findSplitViewInTree(UIElement el) {
+    private static UIElement findRightPaneInTree(UIElement el) {
         if (el == null) return null;
-        if (el instanceof SplitView sv) return sv;
+        if (el instanceof SplitView sv) {
+            String className = sv.getClass().getSimpleName();
+            if (className.contains("HSplit")) {
+                return sv.second;
+            }
+        }
         for (UIElement child : el.getChildren()) {
-            SplitView found = findSplitViewInTree(child);
+            UIElement found = findRightPaneInTree(child);
             if (found != null) return found;
         }
         return null;

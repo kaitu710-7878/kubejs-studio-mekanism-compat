@@ -39,10 +39,8 @@ public class GasEditorPanel extends UIElement {
     private Runnable onQueuedCallback;
 
     public GasEditorPanel() {
-        this.addClass("panel");
         this.layout(l -> {
             l.flexDirection(FlexDirection.COLUMN);
-            l.paddingAll(12.0f);
             l.gapAll(8.0f);
             l.flexGrow(1.0f);
             l.widthPercent(100.0f);

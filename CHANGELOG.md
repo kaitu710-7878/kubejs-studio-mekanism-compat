@@ -4,6 +4,28 @@ All notable changes to **KubeJS Studio Mekanism Compat** will be documented in t
 
 ---
 
+## [1.0.0-alpha.11] - 2026-11-02
+
+### English
+#### Fixed
+* **Create Tab Right Editor Pane Target Resolution (`CreateUiMixin`):**
+  * Fixed right pane container target: previously, `findSplitViewInTree(root)` resolved to Studio's outer `CollapsibleSplit$DockSplit` (the vertical split separating the main UI from the bottom Pending Dock) rather than `CollapsibleSplit$HSplit`, causing `GasEditorPanel` to be mistakenly inserted into the bottom Pending Dock while leaving the native right editor pane untouched.
+  * Resolved directly via `this.rows.getParent()`—the exact, direct parent of Studio's right editor container (`aload 6`).
+  * Switching to `Chemicals` now reliably and immediately hides all 8 native editor elements (header, ID row, type selector, properties scroller, tags, action buttons) and renders the dedicated chemical editor across the entire right pane.
+  * Cleaned up redundant panel padding in `GasEditorPanel` to ensure seamless pixel alignment with Studio's design language.
+
+---
+
+### 日本語
+#### 修正
+* **Createタブ右側エディタコンテナの取得先誤り修正（`CreateUiMixin`）:**
+  * **右ペインが表示されない根本原因を解消:** 従来のツリー探索（`findSplitViewInTree`）では、画面最下部の保留ドックを分割する外側の上下スプリット（`CollapsibleSplit$DockSplit`）が最初にヒットし、その第2要素である画面下の保留ドック（`PendingDock`）へ誤ってパネルが追加されていたため、肝心の右ペイン（アイテム/ブロック/流体エディタ）に何の変化も起きていませんでした。
+  * Studioのプロパティ行コンテナである `this.rows.getParent()` から直接右ペインの親パネル（`aload 6`）をピンポイントで取得する設計へ全面的に修正。
+  * これにより、`Chemicals` を選択した瞬間に、右ペインのStudio既存エディタ要素全8個（ヘッダー行、ID行、タイプ選択、プロパティ行、タグ行、ボタンバー等）が100%確実に非表示化され、専用の化学物質新規作成画面が右ペイン全体に即座に表示されるようになりました。
+  * 二重パディングを解消し、StudioネイティブのUI寸法と完全に一致するようレイアウトを最適化。
+
+---
+
 ## [1.0.0-alpha.10] - 2026-11-02
 
 ### English
