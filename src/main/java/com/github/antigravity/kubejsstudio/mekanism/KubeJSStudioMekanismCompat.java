@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class KubeJSStudioMekanismCompat {
     public static final String MODID = "kubejs_studio_mekanism_compat";
     public static final String MOD_NAME = "KubeJS Studio Mekanism Compat";
-    public static final String VERSION = "1.0.0-alpha.4";
+    public static final String VERSION = "1.0.0-alpha.11";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
